@@ -1,6 +1,8 @@
 Summary
 - in no more than 4 sentences, briefly introduce your data visualization and add any context that can help readers understand it
 
+Sentence 1
+
 Design
 - explain any design choices you made including changes to the visualization after collecting feedback
 
