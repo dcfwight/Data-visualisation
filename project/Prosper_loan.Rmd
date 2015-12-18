@@ -1,0 +1,418 @@
+---
+title: "Prosper Loan Data Exploratory Analysis"
+output: html_document
+author: Doug Wight
+---
+
+This is an exploratory analysis of the Prosper Loan Dataset for the DataAnalyst NanoDegree.
+
+Prosper is a peer to peer lending site.
+
+```{r, echo = FALSE}
+# set up packages and libraries - note have then commented out, to allow the
+# knitter to work
+#install.packages("ggplot2", dependencies = TRUE)
+#install.packages('knitr', dependencies = TRUE)
+#install.packages('dplyr', dependencies = TRUE)
+
+library(ggplot2)
+library(knitr)
+library(dplyr)
+```
+
+```{r, echo = FALSE}
+# set working directory and read in Prosper Loan Data
+setwd("~/Dropbox/coding/udacity/p6/project")
+loans_original <- read.csv("prosperLoanData.csv",header=TRUE)
+# keep original copy, in case I want to revert
+
+loans <- loans_original
+```
+
+
+```{r, echo=FALSE}
+# ListingCategory is currenty a numeric field, but it should really be a category.
+# Create the correct category field. Can map it to the correct terms, if interesting.
+loans$ListingCategory <- factor(loans$ListingCategory..numeric.)
+
+```
+###Examine structure of data
+```{r}
+# names(loans)
+summary(loans)
+```
+
+###Histogram of Income Ranges
+```{r, echo = FALSE}
+ggplot(aes(x=IncomeRange),
+       data = loans)+
+  geom_histogram(fill='blue') +
+  scale_x_discrete() +
+  xlab('Income Range') +
+  ylab('Number')
+```
+
+###Histogram of Borrower Rates
+```{r, echo = FALSE}
+ggplot(aes(x=BorrowerRate),
+       data = loans)+
+  geom_histogram(binwidth = 0.005,
+                 fill='darkgreen') +
+  scale_x_continuous() +
+  xlab('Borrower rate') +
+  ylab('Number')
+```
+
+###Histogram of Borrower APR
+```{r, echo = FALSE}
+ggplot(aes(x=BorrowerAPR),
+       data = loans)+
+  geom_histogram(fill='darkgreen',
+                 binwidth=0.005) +
+  scale_x_continuous() +
+  xlab('BorrowerAPR') +
+  ylab('Number')
+```
+
+###Scatter of Borrower APR vs Borrower Rate
+as expected, very strong correlation between the two
+```{r, echo = FALSE}
+ggplot(aes(x= BorrowerAPR,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point() +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('BorrowerAPR') +
+  ylab('BorrowerRate')
+```
+
+##Boxplots for listing categories
+```{r, echo = FALSE}
+ggplot(aes(x= ListingCategory,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Listing Category') +
+  ylab('BorrowerRate')
+```
+There does appear to be some disparity - Categories 0 and 4 are lower than average - these are 'not available' and 'personal loan'. NOTE, however there are significant outliers in the 'not available category. 10 and 13 seem higher than average. They are cosmetic procedure and household expenses
+
+###Scatter of Borrower APR vs Credit Rating - UPPER
+```{r, echo = FALSE}
+ggplot(aes(x= CreditScoreRangeUpper,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('Upper range of credit score') +
+  ylab('BorrowerRate')
+```
+as expected, very strong negative correlation between the two (good credit score = lower interest rate)
+
+###Scatter of Borrower APR vs Credit Rating - LOWER
+```{r, echo = FALSE}
+ggplot(aes(x= CreditScoreRangeLower,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('Lower range of credit score') +
+  ylab('BorrowerRate')
+```
+Same graph, effectively
+
+###Scatter of Borrower APR vs Occupation - scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= Occupation,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Occupation') +
+  ylab('BorrowerRate')
+```
+not really helpful - run a boxplot instead
+
+##Boxplots for Occupation
+```{r, echo = FALSE}
+ggplot(aes(x= Occupation,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Occupation') +
+  ylab('Borrower APR')
+```
+
+###Scatter of Borrower APR vs Term - scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= Term,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Term') +
+  ylab('BorrowerRate')
+```
+not enough different data to be meaningful.
+
+##Boxplots for Employment Status
+```{r, echo = FALSE}
+ggplot(aes(x= EmploymentStatus,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Employment Status') +
+  ylab('Borrower APR')
+```
+some interesting insights - unsurprisingly not employed has the highest APR, but no real difference between part time and full time. Have a look at faceting it by occupation?
+
+##Boxplots for Employment Status faceted by occupation
+```{r, echo = FALSE}
+ggplot(aes(x= EmploymentStatus,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Employment Status') +
+  ylab('Borrower APR') +
+  facet_wrap(~Occupation)
+```
+A lot of different occupations - quite hard to discern trends. Amalgamate professions?
+
+
+###Scatter of Borrower APR vs Employment duration- scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= EmploymentStatusDuration,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Employment Status Duration') +
+  ylab('BorrowerRate')
+```
+
+###Scatter of Borrower APR vs Income Range- scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= IncomeRange,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Income range') +
+  ylab('BorrowerRate')
+```
+
+
+##Boxplots for Income Range
+```{r, echo = FALSE}
+ggplot(aes(x= IncomeRange,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Income Range') +
+  ylab('Borrower APR')
+```
+
+
+###Scatter of Borrower APR vs Stated Monthly Income - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= StatedMonthlyIncome,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('Stated Monthly Income') +
+  ylab('BorrowerRate')
+```
+heavinly influenced by outliers. Have a quick look at the histogram for stated monthly income
+```{r, echo = FALSE}
+summary(loans$StatedMonthlyIncome)
+qplot(loans$StatedMonthlyIncome)
+```
+rerun, with limit to the data
+
+###Scatter of Borrower APR vs Stated Monthly Income - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= StatedMonthlyIncome,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_continuous(limits = c(0,10000)) +
+  scale_y_continuous()+
+  xlab('Stated Monthly Income') +
+  ylab('BorrowerRate')
+```
+
+###Scatter of Borrower APR vs ProsperScore- scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= ProsperScore,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Prosper Score') +
+  ylab('BorrowerRate')
+```
+
+##Boxplots for Prosper Rating
+```{r, echo = FALSE}
+loans$Prosp_rating_set <-factor(loans$ProsperRating..Alpha.,
+                                levels = c("AA","A","B","C","D","E","HR",""))
+# this just manually sets the levels, to stop ordering on alphabetical (A before AA)
+ggplot(aes(x= Prosp_rating_set,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Prosper Rating') +
+  ylab('Borrower APR')
+```
+pretty strong correlation, but not unusual.
+
+##Boxplots for Borrower States
+```{r, echo = FALSE}
+
+ggplot(aes(x= BorrowerState,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Borrower State') +
+  ylab('Borrower APR')
+```
+IA (Iowa) and ME (Maine) are below average
+
+###Scatter of Borrower APR vs Debt to income ratio - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= DebtToIncomeRatio,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(alpha = 1/50,
+             col='black') +
+  scale_x_log10() +
+  scale_y_continuous()+
+  xlab('Debt to Income ratio') +
+  ylab('BorrowerRate')
+```
+this graph is affected by outliers at 10x+ (limited to 10x)
+
+###Scatter of Borrower APR vs Total Prosper Paments Billed - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= TotalProsperPaymentsBilled,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(alpha = 1/25,
+             col='black') +
+  scale_x_log10() +
+  scale_y_continuous()+
+  xlab('Total on time Prosper Payments Billed') +
+  ylab('BorrowerRate')
+```
+no real correlcation
+
+##Boxplots for Income verifiable
+```{r, echo = FALSE}
+
+ggplot(aes(x= IncomeVerifiable,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Income Verifiable') +
+  ylab('Borrower APR')
+```
+
+##Boxplots for is borrower homeowner
+```{r, echo = FALSE}
+
+ggplot(aes(x= IsBorrowerHomeowner,
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Is Borrower Homeowner') +
+  ylab('Borrower APR')
+```
+
+###Scatter of Borrower APR vs Inquiries last 6 months - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= InquiriesLast6Months,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_continuous(limits = c(0,10)) +
+  scale_y_continuous()+
+  xlab('Inquiries Last 6 months') +
+  ylab('BorrowerRate')
+```
+
+###Scatter of Borrower APR vs Total Prosper Loans - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= TotalProsperLoans,
+           y= BorrowerRate),
+       data = loans)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_discrete(limits = c(0,5)) +
+  scale_y_continuous()+
+  xlab('Total Prosper Loans') +
+  ylab('BorrowerRate')
+```
+
+##Boxplots for Total Prosper Loans
+```{r, echo = FALSE}
+
+ggplot(aes(x= factor(TotalProsperLoans),
+           y= BorrowerAPR),
+       data = loans)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Total Prosper Loans') +
+  ylab('Borrower APR')
+```
+
+Quite an interesting boxplot - take out more loans. But NOTE, thenumber of those with 7 loans is very small.
