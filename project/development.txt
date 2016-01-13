@@ -1,0 +1,14 @@
+Ideas / Development of the Data Analysis task
+
+1) First I did some exploratory data analysis in R - this is in the file called Prosper_loan.Rmd. Just some basic histograms and scatters. Identified some relationships - there was some variance in the borrower rate per occupation.
+
+2) Clearly there was going to be a relationship between the credit score and the borrower rate. Potentially also between the amount loaned and the rate, but neither of these seemed particularly interesting to me. What was potentially of more interest was if there was any discrimination between occupations.
+
+3) Therefore the theme would be to look at borrower rate vs Occupation, but to try and keep other factors constant. In particular you could look at keeping the income level constant (e.g. for the sub-set of £25 - 50k, can we see major differences in rates).
+
+4) This could then be animated, i.e. cycling through the income ranges. You could then allow interaction - choose your income level to highlight which profession you 'should' be for the lowest rates.
+
+5) Could consider other variables as the driving factors - e.g. loan/income level or similar.
+
+Task 1) work out code for subsetting data in R for the £25-50k set.
+
