@@ -304,7 +304,7 @@ ggplot(aes(x= ProsperScore,
 
 ##Boxplots for Prosper Rating
 ```{r, echo = FALSE}
-loans.df$Prosp_rating_set <-factor(loans$ProsperRating..Alpha.,
+loans.df$Prosp_rating_set <-factor(loans.df$ProsperRating..Alpha.,
                                 levels = c("AA","A","B","C","D","E","HR",""))
 # this just manually sets the levels, to stop ordering on alphabetical (A before AA)
 ggplot(aes(x= Prosp_rating_set,
@@ -434,13 +434,11 @@ Quite an interesting boxplot - take out more loans. But NOTE, the number of thos
 ##Look at Bar-chart for borrower rate by occupation, but for the £25-50k income factor ONLY.
 ```{r, echo= FALSE}
 ggplot(aes(x = Occupation),
-       data =  subset(loans.df, IncomeRange =="$25,000-49,999")) +
+       data =  subset(loans.df, IncomeRange =="$25-50k")) +
   geom_bar(stat = "count") +
   coord_flip() +
   ylab('count') +
   xlab('Occupation') +
   ggtitle('Number of borrowers by Occupation')+
   theme_economist()
-  
-
 ```
