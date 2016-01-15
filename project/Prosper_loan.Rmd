@@ -431,10 +431,22 @@ Quite an interesting boxplot - take out more loans. But NOTE, the number of thos
 
 
 
-##Look at Bar-chart for borrower rate by occupation, but for the £25-50k income factor ONLY.
+##Look at Bar-chart for borrower rate by occupation, but for the £25-50k income factor ONLY. Did this to show how to subset
 ```{r, echo= FALSE}
 ggplot(aes(x = Occupation),
        data =  subset(loans.df, IncomeRange =="$25-50k")) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_economist()
+```
+
+##Look at Bar-chart for borrower rate by state, for ALL incomes.
+```{r, echo= FALSE}
+ggplot(aes(x = Occupation),
+       data =  loans.df) +
   geom_bar(stat = "count") +
   coord_flip() +
   ylab('count') +
