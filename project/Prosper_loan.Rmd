@@ -443,7 +443,7 @@ ggplot(aes(x = Occupation),
   theme_economist()
 ```
 
-##Look at Bar-chart for borrower rate by state, for ALL incomes.
+##Look at Bar-chart for borrower rate by Occupation, for ALL incomes.
 ```{r, echo= FALSE}
 ggplot(aes(x = Occupation),
        data =  loans.df) +
@@ -453,4 +453,150 @@ ggplot(aes(x = Occupation),
   xlab('Occupation') +
   ggtitle('Number of borrowers by Occupation')+
   theme_economist()
+```
+
+## Amalgamate some of the occupations
+```{r, echo= FALSE}
+# create a new field called OccGroup
+loans.df$OccGroup <- loans.df$Occupation
+# run code to see summary of levels
+levels(loans.df$OccGroup)
+# start grouping levels, from bottom up
+levels(loans.df$OccGroup)[63:66] <- "Tradesman"
+levels(loans.df$OccGroup)[54:60] <- "Student"
+levels(loans.df$OccGroup)[49:50] <- "Sales"
+levels(loans.df$OccGroup)[49:50] <- "Sales"
+levels(loans.df$OccGroup) [39] <- "Pilot"
+levels(loans.df$OccGroup)[40] <- "Police Officer"
+levels(loans.df$OccGroup)[34:36] <- "Nursing"
+levels(loans.df$OccGroup)[32:33] <- "Military"
+levels(loans.df$OccGroup)[18:20] <- "Engineer"
+levels(loans.df$OccGroup)[3] <- "Admin Assistant"
+levels(loans.df$OccGroup)[2] <- "Accountant"
+levels(loans.df$OccGroup)[1] <- "None provided"
+```
+
+## Now Look at Bar-chart for borrower rate by Occupation, for ALL incomes.
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroup),
+       data =  loans.df) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_economist()
+```
+
+## Create new fields for Occupation, sorted by Frequency, ascending / descending
+note - I learned how to do this in-line with the graph code - details further down.
+```{r, echo= FALSE}
+loans.df$OccGroupDesc <- factor(loans.df$OccGroup, levels = 
+                               names(sort(table(loans.df$OccGroup), decreasing = FALSE)))
+# this creates a new field. Table gets the stats on OccGroup, Sort sorts it, names
+# gets the names field
+loans.df$OccGroupAsc <- factor(loans.df$OccGroup, levels = 
+                               names(sort(table(loans.df$OccGroup), decreasing = TRUE)))
+
+
+```
+
+## Barchart for Borrowers by Occupation - biggest first
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupDesc),
+       data =  loans.df) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_economist()
+```
+
+## Barchart for Borrowers by Occupation - biggest last
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc),
+       data =  loans.df) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_bw()
+```
+
+## Barchart for Borrowers by Occupation - biggest last, subset income > $75-100k
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc),
+       data =  subset(loans.df, IncomeRange =="$75-100k")) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $100k')+
+  theme_light()
+```
+note how the ordering is lost again. To re-set each time, use the 
+following:
+
+## Barchart for Borrowers by Occupation - biggest last, subset income  in 2 buckets, $75-100k and > $100k.
+
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc),
+       data =  subset(
+         loans.df, IncomeRange %in% c("$75-100k","$100k+")
+         )
+       )+
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $100k') +
+  theme_excel()
+```
+
+## Barchart for Borrowers by Occupation - biggest last, subset income  into, $75-100k, and order AS WE GO
+
+```{r, echo= FALSE}
+ggplot(aes(x = factor(OccGroup,
+                      levels = names(
+                        sort(
+                          table(OccGroup)
+                        )
+                      ))),
+       data =  subset(
+         loans.df, IncomeRange == "$75-100k"
+         )
+       )+
+  geom_bar(stat = "count",
+           color = "black",
+           fill = "red") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $100k') +
+  theme_light()
+```
+
+## Combine the two Barchart for Borrowers by Occupation - biggest last, subset income  into, $75-100k and $100k+, and order AS WE GO
+
+```{r, echo= FALSE}
+ggplot(aes(x = factor(OccGroup,
+                      levels = names(
+                        sort(
+                          table(OccGroup)
+                        ,decreasing =TRUE)
+                      ))),
+       data =  subset(
+         loans.df, IncomeRange %in% c("$75-100k","$100k+")
+         )
+       )+
+  geom_bar(stat = "count",
+           color = "grey",
+           fill = "blue") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $75k') +
+  theme_light()
 ```
