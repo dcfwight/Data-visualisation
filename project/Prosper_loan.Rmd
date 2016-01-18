@@ -600,3 +600,198 @@ ggplot(aes(x = factor(OccGroup,
   ggtitle('Number of borrowers by Occupation, subset income > $75k') +
   theme_light()
 ```
+
+## Create a boxplot of the average borrowing rate for each profession at a specific income level (e.g. $50 - 75k)
+
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc,
+           y = BorrowerAPR),
+       data =  subset(
+         loans.df, IncomeRange == "$50-75k"
+         )
+       )+
+  geom_boxplot()
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $75k') +
+  theme_light()
+```
+
+
+## Create a linechart of the average BorrowerAPR for a specific profession, say "analsyt", across the different IncomeRanges
+
+# first install statistics package - Rmisc, to allow to use summarySE
+```{r, echo= FALSE}
+install.pacakges("Rmisc")
+library(Rmisc)
+```  
+
+## Create a new dataframe with the means for BorrowerAPR grouped by IncomeRange and Occupation
+
+```{r, echo= FALSE}
+AprMean <- summarySE(loans.df, measurevar = "BorrowerAPR",
+                     groupvars = c("IncomeRange","OccGroup"))
+```
+
+# Remove all rows where the number of entries < limit (say 5). This makes the average more meaningful and less volatile at the expense of data.
+```{r, echo= FALSE}
+AprMeanReduced <- subset(AprMean, N>=10)
+```
+
+## Create line graph of mean BorrowerAPR against IncomeRange - Note the group has been forced together by 'group = 1'
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR),
+       data =  subset(AprMean, OccGroup == "Analyst")
+         ) +
+  geom_line(group = 1) +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+## Can't see what's going wrong - why I can't create a line graph from the data - created a new dataframe, with just "Analyst" and "Professional" data
+```{r, echo= FALSE}
+AprMeanAnalyst <- subset(AprMean, OccGroup %in% c(
+  "Analyst","Professional"))
+```
+
+# now try and make a line graph out of this new dataframe - the answer is that the lines don't know automatically which GROUP they belong to - below I force it to being group = 1. But will generalise it below
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR),
+       data =  AprMeanAnalyst
+         ) +
+  geom_point() +
+  geom_line(group = AprMeanAnalyst$OccGroup) +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# now try and group each line by occupation, for a multi-line graph
+```{r, echo= FALSE}
+ggplot(data = AprMean,
+       aes(x = IncomeRange,
+           y = BorrowerAPR)
+       ) +
+  geom_point() +
+  geom_line(group=AprMean$OccGroup) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# now subset it, so that it is only positive incomes and group each line by occupation, for a multi-line graph
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR),
+       data =  subset(AprMean, IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))
+         ) +
+  geom_point() +
+  geom_line(group=subset(AprMean, IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))$OccGroup) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# Still can't get it to work. The problem is that I cannot colour the lines so that they are different according to each occupation.
+# The answer is to use group in the aes of ggplot.
+http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
+
+```{r, echo= FALSE}
+# first make new dataframe with the data we want
+AprMeanIncomes <- subset(AprMean,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))  
+
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  AprMeanIncomes)+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# now try and run the graph, with the coding to subset in line
+```{r, echo= FALSE}
+# first make new dataframe with the data we want
+
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  subset(AprMean,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+")))+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# Run the same code, with AprMeanReduced - this should remove the outliers of averages based on low sample numbers
+```{r, echo= FALSE}
+# first make new dataframe with the data we want
+
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  subset(AprMeanReduced,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+")))+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# quite a crowded graph - remove the legend for now
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  subset(AprMeanReduced,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+")))+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
+# I want to see what happens with the attorney class - it has data for $1-25k, then none for $25-50k, then 
+
+## following the tooth growth example (google it....)
+```{r, echo= FALSE}
+tg <- ToothGrowth
+  # summarySE provides the standard deviation, standard error of the mean, and a (default 95%) confidence interval
+tgc <- summarySE(tg, measurevar="len", groupvars=c("supp","dose"))
+```
+
+## run the graph for tooth growth
+```{r, echo = FALSE}
+ggplot(tgc, aes(x=dose, y=len,color = supp)) + 
+    geom_errorbar(aes(ymin=len-se, ymax=len+se), width=.1) +
+    geom_line() +
+    geom_point()
+```
