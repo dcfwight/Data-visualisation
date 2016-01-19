@@ -5,12 +5,68 @@
     <title>Prosper Loan Analysis</title>
     <meta charset="utf-8">
     <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/style.css">
+    
+    <script type="text/javascript">
+      function draw(data) {
+      
+      /*
+        D3.js setup code
+      */
+        d3.select("body")
+            .append("h1")
+            .text("Borrower APR by Occupation and Income Level");
+        
+          "use strict";
+        var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 1200 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;  
+                      
+          
+        var svg = d3.select("body")
+            .append("svg")
+              .attr("width", width + margin.top + margin.bottom)
+              .attr("height", height + margin.left + margin.right)
+            .append("g")
+                .attr('class','chart');    
+                
+        var yScale = d3.scale.linear()
+            .range([height,0]);
+        
+        
+      /*
+        Dimple.js Chart construction code
+      */
+
+          var myChart = new dimple.chart(svg, data);
+          var x = myChart.addCategoryAxis("x", "IncomeRange").
+            showGridlines = true; 
+          myChart.addMeasureAxis("y", "BorrowerAPR").
+            showGridlines = false;
+          
+          
+          myChart.addSeries("OccGroup", dimple.plot.line);
+          myChart.addSeries("OccGroup", dimple.plot.scatter);
+          
+          myChart.draw();
+          
+             
+        };
+      </script>
 </head>
 <body>
     <h1>Udacity Data Analysis Nano Degree</h1>
     <h2>Project 6: Make Effective Data Visualization</h2>
     <h2>Author: Doug Wight</h2>
-    <h3>Submission date: December 2015</h3>
+    <h3>Submission date: January 2016</h3>
+    
+    <script type="text/javascript">
+    /*
+    Use D3 to load the CSV file
+    and pass the contents of it to the draw function
+    */
+    d3.csv("data/apr_data.csv", draw);
+    </script>
 </body>
 </html>
