@@ -9,64 +9,113 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
     
     <script type="text/javascript">
-      function draw(data) {
+      function create(data) {
       
       /*
         D3.js setup code
       */
-        d3.select("body")
+        d3.select("#container")
             .append("h1")
-            .text("Borrower APR by Occupation and Income Level");
+            .text("Borrower APR by Occupation and Income Level, using Dimple");
         
           "use strict";
+        // Set the margins for use with the svg
         var margin = {top: 20, right: 20, bottom: 30, left: 40},
             width = 1200 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;  
                       
-          
-        var svg = d3.select("body")
+        // Create svg variable to use with Dimple code  
+        var svg = d3.select("#container")
             .append("svg")
               .attr("width", width + margin.top + margin.bottom)
               .attr("height", height + margin.left + margin.right)
             .append("g")
                 .attr('class','chart');    
-                
-        var yScale = d3.scale.linear()
-            .range([height,0]);
-        
-        
       /*
         Dimple.js Chart construction code
       */
-
-          var myChart = new dimple.chart(svg, data);
-          var x = myChart.addCategoryAxis("x", "IncomeRange").
-            showGridlines = true; 
-          myChart.addMeasureAxis("y", "BorrowerAPR").
-            showGridlines = false;
+        var myChart = new dimple.chart(svg, data);
+            
+            var x = myChart.addCategoryAxis("x", "IncomeRange");
+            x.showGridlines = true;
+            
+            var y = myChart.addMeasureAxis("y", "BorrowerAPR");
+            y.showGridlines = true;
+            y.tickFormat =".0%";
+            
+            myChart.addSeries("OccGroup", dimple.plot.line);
+            myChart.addSeries("OccGroup", dimple.plot.scatter);
+        
+        myChart.draw();
+        
+        // Create svg2 variable to use with D3 code
+        d3.select("#container")
+            .append("h1")
+            .text("Borrower APR by Occupation and Income Level, using D3");
+        
+        var svg2 = d3.select("#container")
+            .append("svg")
+                .attr("width", width + margin.top + margin.bottom)
+                .attr("height", height + margin.left + margin.right)
+        
+        var chart2 = svg2.append("g")
+            .attr("transform","translate(" + margin.left +"," + margin.top +")");
+        
+      /*
+        D3.js Chart construction code
+      */
+        //Constructing the axes - first find the extent of the data range for each axis
+        var yScale = d3.scale.linear()
+                                .domain([0,d3.max(data, function(d){return d["BorrowerAPR"];})])
+                                .range([0,height]);
+       debugger;
+        
+        d3.select('svg2')
+            .selectAll('circle')
+            .data(data)
+            .enter()
+            .append('circle');
           
+        
+         
+        /*  
+          var cat_extent = d3.extent(data, function(d) {
+            return d['IncomeRange'];
+            });
+         // Not sure about this code - it was for a time series originally, but this is ordinal.
           
-          myChart.addSeries("OccGroup", dimple.plot.line);
-          myChart.addSeries("OccGroup", dimple.plot.scatter);
+          // Find range of the APR data
+          var APR_extent = d3.extent(data, function(d) {
+            return d['BorrowerAPR'];
+          });
+         */ 
+          debugger;
+            
+            
+            
+            
+            
+            
           
-          myChart.draw();
           
              
         };
       </script>
 </head>
 <body>
-    <h1>Udacity Data Analysis Nano Degree</h1>
-    <h2>Project 6: Make Effective Data Visualization</h2>
-    <h2>Author: Doug Wight</h2>
-    <h3>Submission date: January 2016</h3>
+    <div id="container">
+        <h1>Udacity Data Analysis Nano Degree</h1>
+        <h2>Project 6: Make Effective Data Visualization</h2>
+        <h2>Author: Doug Wight</h2>
+        <h3>Submission date: January 2016</h3>
+    </div>
     
     <script type="text/javascript">
     /*
     Use D3 to load the CSV file
-    and pass the contents of it to the draw function
+    and pass the contents of it to the create function
     */
-    d3.csv("data/apr_data.csv", draw);
+    d3.csv("data/apr_data.csv", create);
     </script>
 </body>
 </html>
