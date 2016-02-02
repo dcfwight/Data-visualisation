@@ -29,13 +29,13 @@
             .text("Borrower APR by Occupation and Income Level, using D3");
        
        // Create svg2 variable to use with D3 code 
-        var svg2 = d3.select("#container")
+        var svg = d3.select("#container")
             .append("svg")
                 .attr("width", width + margin.top + margin.bottom)
                 .attr("height", height + margin.left + margin.right)
         
-        // Create chart2 variable within the svg2 item to house the chart
-        var chart2 = svg2.append("g")
+        // Create myChart variable within the svg item to house the chart
+        var myChart = svg.append("g")
             .attr("transform","translate(" + margin.left +"," + margin.top +")");
     
       /*
@@ -61,7 +61,7 @@
             .orient("bottom");
         
         // Add the x-axis in it's own 'g' group.    
-        chart2.append("g")
+        myChart.append("g")
             .attr("transform","translate(0," + height + ")")
             .call(xAxis)
           .append('text')
@@ -70,7 +70,7 @@
             .style("text-anchor","end")
             .text("Income Bracket");
         
-        chart2.append("g")
+        myChart.append("g")
             .call(yAxis)
           .append('text')
             .attr('transform', "rotate(-90)")
@@ -91,7 +91,9 @@
             .attr("fill", fillColor);
        
        
-       data.forEach(function(item) {
+       
+       
+      /* data.forEach(function(item) {
             chart2.append("rect")
               .attr("x",xScale(item.IncomeRange))
               .attr("width",10)
@@ -99,13 +101,13 @@
               .attr("height",10)
               .attr("fill", fillColor)
               });
-        
+        */
             
        debugger;
         
         d3.select('chart2')
             .selectAll('circle')
-                .data(data)
+            .data(data)
             .enter()
             .append('circle');
           
@@ -119,7 +121,7 @@
             .text("Borrower APR by Occupation and Income Level, using Dimple");
                       
         // Create svg variable to use with Dimple code  
-        var svg = d3.select("#container")
+        var svg2 = d3.select("#container")
             .append("svg")
               .attr("width", width + margin.top + margin.bottom)
               .attr("height", height + margin.left + margin.right)
@@ -128,19 +130,19 @@
       /*
         Dimple.js Chart construction code
       */
-        var myChart = new dimple.chart(svg, data);
+        var myChart2 = new dimple.chart(svg2, data);
             
-            var x = myChart.addCategoryAxis("x", "IncomeRange");
+            var x = myChart2.addCategoryAxis("x", "IncomeRange");
             x.showGridlines = true;
             
-            var y = myChart.addMeasureAxis("y", "BorrowerAPR");
+            var y = myChart2.addMeasureAxis("y", "BorrowerAPR");
             y.showGridlines = true;
             y.tickFormat =".0%";
             
-            myChart.addSeries("OccGroup", dimple.plot.line);
-            myChart.addSeries("OccGroup", dimple.plot.scatter);
+            myChart2.addSeries("OccGroup", dimple.plot.line);
+            myChart2.addSeries("OccGroup", dimple.plot.scatter);
         
-        myChart.draw();   
+        myChart2.draw();   
              
         };
       </script>
