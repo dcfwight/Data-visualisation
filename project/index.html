@@ -14,15 +14,109 @@
       /*
         D3.js setup code
       */
-        d3.select("#container")
-            .append("h1")
-            .text("Borrower APR by Occupation and Income Level, using Dimple");
-        
-          "use strict";
-        // Set the margins for use with the svg
+        // Set the margins for use with the svgs
         var margin = {top: 20, right: 20, bottom: 30, left: 40},
             width = 1200 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;  
+        
+        var radius = 4,
+            fillColor = "blue",
+            multiplier = 1.75;
+        
+        
+        d3.select("#container")
+            .append("h1")
+            .text("Borrower APR by Occupation and Income Level, using D3");
+       
+       // Create svg2 variable to use with D3 code 
+        var svg2 = d3.select("#container")
+            .append("svg")
+                .attr("width", width + margin.top + margin.bottom)
+                .attr("height", height + margin.left + margin.right)
+        
+        // Create chart2 variable within the svg2 item to house the chart
+        var chart2 = svg2.append("g")
+            .attr("transform","translate(" + margin.left +"," + margin.top +")");
+    
+      /*
+        D3.js Chart construction code
+      */
+        
+        //Constructing the axes - first find the extent of the data range for each axis
+        var yScale = d3.scale.linear()
+                                .domain([0,d3.max(data, function(d){return d["BorrowerAPR"];})])
+                                .range([height,0]);
+                                
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+        
+        // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
+        var xScale = d3.scale.ordinal()
+                                .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
+                                .rangePoints([0,width],1);
+        
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+        
+        // Add the x-axis in it's own 'g' group.    
+        chart2.append("g")
+            .attr("transform","translate(0," + height + ")")
+            .call(xAxis)
+          .append('text')
+            .attr("x", width)
+            .attr("y", -6)
+            .style("text-anchor","end")
+            .text("Income Bracket");
+        
+        chart2.append("g")
+            .call(yAxis)
+          .append('text')
+            .attr('transform', "rotate(-90)")
+            .attr('y', 6)
+            .attr('dy', ".71em")
+            .style('text-anchor','end')
+            .text('Average Borrower APR')
+        
+       // Add the data
+       d3.selectAll("circle")
+            .attr("cx", function(d){
+                return xScale(d["IncomeRange"])
+            })
+            .attr("cy", function(d){
+                return yScale(d["BorrowerAPR"])
+            })
+            .attr("r", radius)
+            .attr("fill", fillColor);
+       
+       
+       data.forEach(function(item) {
+            chart2.append("rect")
+              .attr("x",xScale(item.IncomeRange))
+              .attr("width",10)
+              .attr("y",yScale(item.BorrowerAPR))
+              .attr("height",10)
+              .attr("fill", fillColor)
+              });
+        
+            
+       debugger;
+        
+        d3.select('chart2')
+            .selectAll('circle')
+                .data(data)
+            .enter()
+            .append('circle');
+          
+        
+     
+          debugger;
+            
+            
+          d3.select("#container")
+            .append("h1")
+            .text("Borrower APR by Occupation and Income Level, using Dimple");
                       
         // Create svg variable to use with Dimple code  
         var svg = d3.select("#container")
@@ -46,58 +140,7 @@
             myChart.addSeries("OccGroup", dimple.plot.line);
             myChart.addSeries("OccGroup", dimple.plot.scatter);
         
-        myChart.draw();
-        
-        // Create svg2 variable to use with D3 code
-        d3.select("#container")
-            .append("h1")
-            .text("Borrower APR by Occupation and Income Level, using D3");
-        
-        var svg2 = d3.select("#container")
-            .append("svg")
-                .attr("width", width + margin.top + margin.bottom)
-                .attr("height", height + margin.left + margin.right)
-        
-        var chart2 = svg2.append("g")
-            .attr("transform","translate(" + margin.left +"," + margin.top +")");
-        
-      /*
-        D3.js Chart construction code
-      */
-        //Constructing the axes - first find the extent of the data range for each axis
-        var yScale = d3.scale.linear()
-                                .domain([0,d3.max(data, function(d){return d["BorrowerAPR"];})])
-                                .range([0,height]);
-       debugger;
-        
-        d3.select('svg2')
-            .selectAll('circle')
-            .data(data)
-            .enter()
-            .append('circle');
-          
-        
-         
-        /*  
-          var cat_extent = d3.extent(data, function(d) {
-            return d['IncomeRange'];
-            });
-         // Not sure about this code - it was for a time series originally, but this is ordinal.
-          
-          // Find range of the APR data
-          var APR_extent = d3.extent(data, function(d) {
-            return d['BorrowerAPR'];
-          });
-         */ 
-          debugger;
-            
-            
-            
-            
-            
-            
-          
-          
+        myChart.draw();   
              
         };
       </script>

@@ -779,7 +779,16 @@ ggplot(aes(x = IncomeRange,
   theme(legend.position = "none")
 ```
 
-# I want to see what happens with the attorney class - it has data for $1-25k, then none for $25-50k, then 
+# Write the created datatable to CSV for use with d3
+```{r, echo= FALSE}
+# create clean data table, without needing to sort
+AprMeanReducedFinal <- subset(AprMeanReduced,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))
+write.csv(AprMeanReducedFinal, file = "apr_data.csv")
+```
+
+
 
 ## following the tooth growth example (google it....)
 ```{r, echo= FALSE}
