@@ -1,9 +1,26 @@
 h1,h2,h3{
     text-align: center
-}
+    }
 
 h1 {
-    font-size: 50px;
-    color: red;
-    
+    font-size: 40px;
+    color: black;    
+    }
+
+circle {
+        opacity: 0.2;
+        stroke: none;
+      }
+      
+.axis path,
+.axis line {
+    fill: none;
+    stroke  : black;
+    shape-rendering: crispEdges;        
+}
+
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 11px;
 }
