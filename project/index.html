@@ -23,7 +23,13 @@
             fillColor = "blue",
             multiplier = 1.75;
         
-        var formatAsPercentage = d3.format(".1%")  
+        var formatAsPercentage = d3.format("1%")
+        
+        // set up fill values for circles
+        var cValue = function(d) { return d.OccGroup;},
+            color = d3.scale.category10();
+        
+           
         
         // Modify the element with id="container", in this case a div
         d3.select("#container")
@@ -40,7 +46,7 @@
         // equivalent to 'div' in HTML
         var myChart = svg.append("g")
             .attr("transform","translate(" + margin.left +"," + margin.top +")");
-    
+        
       /*
         D3.js Chart construction code
       */
@@ -49,14 +55,14 @@
         var yScale = d3.scale.linear()
             .domain([0,d3.max(data, function(d){return d["BorrowerAPR"];})])
             .range([height,0])
-            //  .tickSize(-height)
             .nice();
                                 
         // create the y-axis object (note - not added yet, just defined)
         var yAxis = d3.svg.axis()
             .scale(yScale)
+            .tickSize(5)
+            .tickFormat(formatAsPercentage)
             .orient("left"); // this specifies the orientation of labels to the axis
-        
         
         // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
         var xScale = d3.scale.ordinal()
@@ -66,8 +72,8 @@
         // create the x-axis object (note - not added yet, just defined)
         var xAxis = d3.svg.axis()
             .scale(xScale)
-            .orient("bottom");   // this specifies the orientation of labels to the axis
-            
+            .tickSize(5)
+            .orient("bottom");   // this specifies the orientation of labels to the axis   
         
         // Add the x-axis in it's own 'g' group.    
         myChart.append("g")
@@ -89,10 +95,14 @@
             .attr('y', 6)
             .attr('dy', ".71em")
             .style('text-anchor','end')
-            .text('Average Borrower APR')
+            .text('Average Borrower APR');
+            
+        // add the tooltip area to the webpage
         
-        yAxis.tickFormat(d3.format(".1%"))  ;
-       
+        var tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+    
      /*  
     // append circle for each item in the data - this code works!
       data.forEach(function(item) {
@@ -116,10 +126,24 @@
                                 return yScale(d["BorrowerAPR"]);
                                 })
                     .attr("r", radius)
-                    .style("fill", fillColor);
-        
+                    .style("fill", function(d) { return color(cValue(d));})
+                    .on("mouseover", function(d) {
+                         tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                            tooltip.html(d.OccGroup)
+                                .style("left", (d3.event.pageX + 5) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px");
+                                })
+                    .on("mouseout", function(d) {
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                                                 });
+                    
+                    
         /*
-        // This code adds labels, but I've commented it out as it's too crowded.
+        // This code adds labels corretly, but I've commented it out as it's too crowded. Use tooltips instead
         var labels = d3.select("svg").selectAll('text')
                 .data(data)
             .enter()
@@ -133,7 +157,9 @@
                 .text(function (d){
                                 return d["OccGroup"];});    
          */
-         
+        
+        /*
+        // need to sort out this code - not working.
         var legend = d3.select("svg").append("g")
             .attr("class","legend")
             .attr("x",50)
@@ -142,7 +168,7 @@
             .attr("width", 100)
             .style("font-size","12px")
             .call(d3.legend);
-     
+        */
           debugger;
             
             
