@@ -24,6 +24,12 @@ circle {
     font-size: 12px;
 }
 
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
 .tooltip {
   position: absolute;
   width: 400px;
