@@ -61,8 +61,6 @@
                     .attr("width", width + margin.top + margin.bottom)
                     .attr("height", height + margin.left + margin.right)
             
-            
-            
             // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
             // equivalent to 'div' in HTML
             var myChart = svg.append("g")
@@ -118,9 +116,12 @@
                     .text('Average Borrower APR');
             
             // add the tooltip area to the webpage
-            var tooltip = d3.select("body").append("div")
-                .attr("class", "tooltip")
-                .style("opacity", 0);
+            var tooltip = d3.select("body")
+                .append("div")
+                    .attr("class", "tooltip")
+                    .style("width", "150px")
+                    .style("opacity", 0);
+                
     
             /*  
             // append circle for each item in the data - this code works!
@@ -149,9 +150,10 @@
                          tooltip.transition()
                             .duration(200)
                             .style("opacity", .9);
-                            tooltip.html(d.OccGroup + "<br>" + formatAsPercentage(d.BorrowerAPR))
+                            tooltip.html(d.OccGroup + "<br>" + "Mean APR: " + d3.format(".1%")(d.BorrowerAPR))
                                 .style("left", (d3.event.pageX + 5) + "px")
-                                .style("top", (d3.event.pageY - 28) + "px");
+                                .style("top", (d3.event.pageY - 28) + "px")
+                                .style("background-color","white");
                                 })
                     .on("mouseout", function(d) {
                         tooltip.transition()
@@ -174,12 +176,15 @@
             var line = d3.svg.line()
                 .x(function(d) { return xScale(d.IncomeRange) + margin.left; })
                 .y(function(d) { return yScale(d.BorrowerAPR); });
-                    
+
+            
             // Adding path along the points to create a line
             svg.append('path')
                 .datum(account)
                 .attr("class","line")
-                .attr("d",line);
+                .attr("d",line)
+                .attr("stroke","green")
+                .attr("stroke",occGroupScale("Police Officer"));
             debugger;
             
             
