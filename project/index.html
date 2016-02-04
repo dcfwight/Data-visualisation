@@ -18,6 +18,7 @@
       */
         // Set the margins for use with the svgs
         var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            legendBuffer = 150,
             width = 1200 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;  
         
@@ -67,7 +68,8 @@
         // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
         // equivalent to 'div' in HTML
         var myChart = svg.append("g")
-            .attr("transform","translate(" + margin.left +"," + margin.top +")");
+            .attr("transform","translate(" + margin.left +"," + margin.top +")")
+            .attr("width", width);
         
       /*
         D3.js Chart construction code
@@ -89,7 +91,7 @@
         // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
         var xScale = d3.scale.ordinal()
             .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
-            .rangePoints([0,width],1);
+            .rangePoints([0,width - legendBuffer],1);
         
         // create the x-axis object (note - not added yet, just defined)
         var xAxis = d3.svg.axis()
@@ -103,14 +105,14 @@
             .attr("class","x axis")
             .call(xAxis)
           .append('text')
-            .attr("x", width)
+            .attr("x", width - legendBuffer)
             .attr("y", -6)
             .style("text-anchor","end")
             .text("Income Bracket");
         
         // Add the y-axis in it's own 'g' group.
         myChart.append("g")
-                .attr("class","x axis")
+                .attr("class","y axis")
             .call(yAxis)
           .append('text')
             .attr('transform', "rotate(-90)")
@@ -162,12 +164,11 @@
                             .duration(500)
                             .style("opacity", 0);
                                                  });
-        
-        // populate legendNames
-        
-       
-        
+            
         // draw legend
+        
+        var container = d3.select("#container")
+        
         var legend = svg.selectAll(".legend")
                 .data(uniqueOccGroup)
             .enter().append("g")
@@ -177,7 +178,7 @@
                     
         // draw legend colored rectangles
         legend.append("rect")
-            .attr("x", width - 28)
+            .attr("x", width - 38)
             .attr("y", 2)
             .attr("width", 20)
             .attr("height", 6)
@@ -185,7 +186,7 @@
             
         // draw legend text
         legend.append("text")
-            .attr("x", width - 6)
+            .attr("x", width - 16)
             .attr("y", 8)
             //.attr("dy", ".35em")
             .attr("font-size","8px")
