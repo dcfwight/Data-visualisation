@@ -9,7 +9,9 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
     
     <script type="text/javascript">
-      function create(data) {
+        
+        
+        function create(data) {
       
       /*
         D3.js setup code
@@ -25,10 +27,30 @@
         
         var formatAsPercentage = d3.format("1%")
         
-        // set up fill values for circles
-        var cValue = function(d) { return d.OccGroup;},
-            color = d3.scale.category10();
+        var colors = ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f",
+                      "#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f","#e5c494","#b3b3b3",
+                      "#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf","#999999",
+                      "#f7fcfd","#e5f5f9","#ccece6","#99d8c9","#66c2a4","#41ae76","#238b45","#006d2c","#00441b",
+                      "#fff7fb","#ece2f0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a","#016c59","#014636",
+                      "#fff7fb","#ece7f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"]
         
+        // first create an array with all the Occupations (note there will be duplicates)
+        var totOccGroup =[]
+        for (datum in data) {totOccGroup.push(data[datum]["OccGroup"]);};
+        
+        // next remove the duplicates - this creates a list of the Occupation Groups, for the legend  
+        var uniqueOccGroup=totOccGroup.filter(function(itm,i,totOccGroup){
+            return i==totOccGroup.indexOf(itm);
+            });
+        
+        // set up fill values for circles
+        var cValue = function(d) { return d.OccGroup;};
+        
+        var occGroupScale = d3.scale.ordinal()
+            .domain(uniqueOccGroup)
+            .range(colors);
+        
+        debugger;  
            
         
         // Modify the element with id="container", in this case a div
@@ -126,7 +148,7 @@
                                 return yScale(d["BorrowerAPR"]);
                                 })
                     .attr("r", radius)
-                    .style("fill", function(d) { return color(cValue(d));})
+                    .style("fill", function(d) { return occGroupScale(cValue(d));})
                     .on("mouseover", function(d) {
                          tooltip.transition()
                             .duration(200)
@@ -140,10 +162,38 @@
                             .duration(500)
                             .style("opacity", 0);
                                                  });
+        
+        // populate legendNames
+        
+       
+        
+        // draw legend
+        var legend = svg.selectAll(".legend")
+                .data(uniqueOccGroup)
+            .enter().append("g")
+                .attr("class", "legend")
+                .attr("transform", function(d, i) { return "translate(0," + i * 8 +")"; });
+        debugger;            
                     
-                    
+        // draw legend colored rectangles
+        legend.append("rect")
+            .attr("x", width - 28)
+            .attr("y", 2)
+            .attr("width", 20)
+            .attr("height", 6)
+            .style("fill", function(d) {return occGroupScale(d); });
+            
+        // draw legend text
+        legend.append("text")
+            .attr("x", width - 6)
+            .attr("y", 8)
+            //.attr("dy", ".35em")
+            .attr("font-size","8px")
+            .style("text-anchor", "start")
+            .text(function(d) { return d;});
+                  
         /*
-        // This code adds labels corretly, but I've commented it out as it's too crowded. Use tooltips instead
+        // This code adds labels correctly, but I've commented it out as it's too crowded. Used tooltips instead
         var labels = d3.select("svg").selectAll('text')
                 .data(data)
             .enter()
