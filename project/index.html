@@ -50,6 +50,17 @@
                 .domain(uniqueOccGroup)
                 .range(colors);
         
+            // test code to create an array of values for "Accountant", to use for making a line
+            var account = [];
+            for (datum in data) {
+                if (data[datum]["OccGroup"] === "Accountant") {
+                    account.push(
+                        {"IncomeRange":data[datum]["IncomeRange"],
+                        "BorrowerAPR":data[datum]["BorrowerAPR"]}
+                    );
+                }
+            };
+            
             debugger;  
            
         
