@@ -50,20 +50,6 @@
                 .domain(uniqueOccGroup)
                 .range(colors);
         
-            // test code to create an array of values for "Accountant", to use for making a line
-            var account = [];
-            for (datum in data) {
-                if (data[datum]["OccGroup"] === "Accountant") {
-                    account.push(
-                        {"IncomeRange":data[datum]["IncomeRange"],
-                        "BorrowerAPR":data[datum]["BorrowerAPR"]}
-                    );
-                }
-            };
-            
-            debugger;  
-           
-        
             // Modify the element with id="container", in this case a div
             d3.select("#container")
                 .append("h1")
@@ -74,7 +60,9 @@
                 .append("svg")
                     .attr("width", width + margin.top + margin.bottom)
                     .attr("height", height + margin.left + margin.right)
-        
+            
+            
+            
             // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
             // equivalent to 'div' in HTML
             var myChart = svg.append("g")
@@ -161,7 +149,7 @@
                          tooltip.transition()
                             .duration(200)
                             .style("opacity", .9);
-                            tooltip.html(d.OccGroup)
+                            tooltip.html(d.OccGroup + "<br>" + formatAsPercentage(d.BorrowerAPR))
                                 .style("left", (d3.event.pageX + 5) + "px")
                                 .style("top", (d3.event.pageY - 28) + "px");
                                 })
@@ -170,6 +158,30 @@
                             .duration(500)
                             .style("opacity", 0);
                                                  });
+            
+            // test code to create an array of values for "Accountant", to use for making a line
+            var account = [];
+            for (datum in data) {
+                if (data[datum]["OccGroup"] === "Accountant") {
+                    account.push(
+                        {"IncomeRange":data[datum]["IncomeRange"],
+                        "BorrowerAPR":data[datum]["BorrowerAPR"]}
+                    );
+                }
+            };
+            
+            // Create function to define pixel points of the line
+            var line = d3.svg.line()
+                .x(function(d) { return xScale(d.IncomeRange) + margin.left; })
+                .y(function(d) { return yScale(d.BorrowerAPR); });
+                    
+            // Adding path along the points to create a line
+            svg.append('path')
+                .datum(account)
+                .attr("class","line")
+                .attr("d",line);
+            debugger;
+            
             
             // draw legend
             var container = d3.select("#container")
