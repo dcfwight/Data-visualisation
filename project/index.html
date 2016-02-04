@@ -161,32 +161,38 @@
                             .style("opacity", 0);
                                                  });
             
-            // test code to create an array of values for "Accountant", to use for making a line
-            var account = [];
-            for (datum in data) {
-                if (data[datum]["OccGroup"] === "Accountant") {
-                    account.push(
+            // Create function to draw a line for an occupation group
+            function lineDraw(occupation, occupData) {
+
+                // Create function to define pixel points of the line
+                var line = d3.svg.line()
+                    .x(function(d) { return xScale(d.IncomeRange) + margin.left; })
+                    .y(function(d) { return yScale(d.BorrowerAPR); });
+            
+                // Adding path along the points to create a line
+                svg.append('path')
+                    .datum(occupData)
+                    .attr("class","line")
+                    .attr("d",line)
+                    .attr("stroke","green")
+                    .attr("stroke",occGroupScale(occupation));
+            }; // End of function lineDraw(occupation)
+            
+            // Create a loop to draw all the occupation lines
+            for (occupation in uniqueOccGroup) { 
+                var occupData = []
+                var count = 0
+                for (datum in data) {
+                    if (data[datum]["OccGroup"] === uniqueOccGroup[occupation]) {
+                    occupData.push(
                         {"IncomeRange":data[datum]["IncomeRange"],
                         "BorrowerAPR":data[datum]["BorrowerAPR"]}
                     );
-                }
+                    }
+                lineDraw(uniqueOccGroup[occupation], occupData);           
+                };
             };
-            
-            // Create function to define pixel points of the line
-            var line = d3.svg.line()
-                .x(function(d) { return xScale(d.IncomeRange) + margin.left; })
-                .y(function(d) { return yScale(d.BorrowerAPR); });
-
-            
-            // Adding path along the points to create a line
-            svg.append('path')
-                .datum(account)
-                .attr("class","line")
-                .attr("d",line)
-                .attr("stroke","green")
-                .attr("stroke",occGroupScale("Police Officer"));
-            debugger;
-            
+ 
             
             // draw legend
             var container = d3.select("#container")
