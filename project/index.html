@@ -58,7 +58,8 @@
                         return d['apr'];
                         });
                         
-                        return {'meanAPR': meanApr};
+                        return {'meanAPR': meanApr,
+                                'count':leaves.length};
                 }
                 
                 // nest the data by Occupation Group then by Income Range
@@ -88,13 +89,55 @@
                     return d3.max(double_nest, function(d){
                         return maxApr(d.values);})
                 }
-            
+                debugger;
                 //Constructing the axes - first find the extent of the data range for each axis
                 var yScale2 = d3.scale.linear()
                     .domain([0,maxAprGroup(nested)])
                     .range([height,0])
                     .nice();
-                debugger;    
+                
+                // create the y-axis object (note - not added yet, just defined)
+                var yAxis2 = d3.svg.axis()
+                    .scale(yScale2)
+                    .tickSize(5)
+                    .tickFormat(formatAsPercentage)
+                    .orient("left") // this specifies the orientation of labels to the axis
+                    .innerTickSize(legendBuffer-width);
+                
+                // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
+                var xScale2 = d3.scale.ordinal()
+                    .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
+                    .rangePoints([0,width - legendBuffer],1);
+                
+                // create the x-axis object (note - not added yet, just defined)
+                var xAxis2 = d3.svg.axis()
+                    .scale(xScale2)
+                    .tickSize(5)
+                    .orient("bottom");   // this specifies the orientation of labels to the axis
+                    
+                // Add the x-axis in it's own 'g' group.    
+                myChart2.append("g")
+                    .attr("transform","translate(0," + height + ")")
+                    .attr("class","x axis")
+                    .call(xAxis2)
+                    .append('text')
+                        .attr("x", width - legendBuffer)
+                        .attr("y", -6)
+                        .style("text-anchor","end")
+                        .text("Income Bracket");
+            
+                // Add the y-axis in it's own 'g' group.
+                myChart2.append("g")
+                    .attr("class","y axis")
+                    .call(yAxis2)
+                    .append('text')
+                        .attr('transform', "rotate(-90)")
+                        .attr('y', 6)
+                        .attr('dy', ".71em")
+                        .style('text-anchor','end')
+                        .style('fill','black')
+                        .text('Average Borrower APR');
+                      
             };// END of function create_full(data)
         
         plot_points(data);
