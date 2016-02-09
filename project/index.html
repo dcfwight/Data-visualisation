@@ -32,22 +32,20 @@
                       "#fff7fb","#ece7f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"]
         
         function create(data) { 
-            // first create an array with all the Occupations (note there will be duplicates)
-            var totOccGroup =[]
-            for (datum in data) {
-                totOccGroup.push(data[datum]["OccGroup"]);
-            };
+            // Create a set of unique occupations called 'unique' by adding to it.
+            var unique = d3.set();
+            data.forEach(function(d){
+                unique.add(d["OccGroup"])
+                           });
+            // Then create an array of the values in the set unique - makes code easier later on.
+            var uniqueOcc = unique.values();
+            debugger;
             
-            // next remove the duplicates - this creates a list of the Occupation Groups, for the legend  
-            var uniqueOccGroup=totOccGroup.filter(function(itm,i,totOccGroup){
-                return i==totOccGroup.indexOf(itm);
-            });
-        
             // set up fill values for circles
             var cValue = function(d) { return d.OccGroup;};
         
             var occGroupScale = d3.scale.ordinal()
-                .domain(uniqueOccGroup)
+                .domain(uniqueOcc)
                 .range(colors);
         
             // Modify the element with id="container", in this case a div
@@ -80,7 +78,8 @@
                 .scale(yScale)
                 .tickSize(5)
                 .tickFormat(formatAsPercentage)
-                .orient("left"); // this specifies the orientation of labels to the axis
+                .orient("left") // this specifies the orientation of labels to the axis
+                .innerTickSize(legendBuffer-width);
         
             // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
             var xScale = d3.scale.ordinal()
@@ -113,6 +112,7 @@
                     .attr('y', 6)
                     .attr('dy', ".71em")
                     .style('text-anchor','end')
+                    .style('fill','black')
                     .text('Average Borrower APR');
             
             // add the tooltip area to the webpage
@@ -147,14 +147,14 @@
                     .attr("r", radius)
                     .style("fill", function(d) { return occGroupScale(cValue(d));})
                     .on("mouseover", function(d) {
-                         tooltip.transition()
+                        tooltip.transition()
                             .duration(200)
                             .style("opacity", .9);
-                            tooltip.html(d.OccGroup + "<br>" + "Mean APR: " + d3.format(".1%")(d.BorrowerAPR))
-                                .style("left", (d3.event.pageX + 5) + "px")
-                                .style("top", (d3.event.pageY - 28) + "px")
-                                .style("background-color","white");
-                                })
+                        tooltip.html(d.OccGroup + "<br>" + "Mean APR: " + d3.format(".1%")(d.BorrowerAPR))
+                            .style("left", (d3.event.pageX + 5) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px")
+                            .style("background-color","white");
+                        })
                     .on("mouseout", function(d) {
                         tooltip.transition()
                             .duration(500)
@@ -179,26 +179,24 @@
             }; // End of function lineDraw(occupation)
             
             // Create a loop to draw all the occupation lines
-            for (occupation in uniqueOccGroup) { 
+            for (occupation in uniqueOcc) { 
                 var occupData = []
-                var count = 0
                 for (datum in data) {
-                    if (data[datum]["OccGroup"] === uniqueOccGroup[occupation]) {
+                    if (data[datum]["OccGroup"] === uniqueOcc[occupation]) {
                     occupData.push(
                         {"IncomeRange":data[datum]["IncomeRange"],
                         "BorrowerAPR":data[datum]["BorrowerAPR"]}
                     );
                     }
-                lineDraw(uniqueOccGroup[occupation], occupData);           
+                lineDraw(uniqueOcc[occupation], occupData);           
                 };
             };
  
-            
             // draw legend
             var container = d3.select("#container")
         
             var legend = svg.selectAll(".legend")
-                .data(uniqueOccGroup)
+                .data(uniqueOcc)
                     .enter()
                 .append("g")
                     .attr("class", "legend")
@@ -206,13 +204,15 @@
                     
             // draw legend colored rectangles - note this could have been chained to the above
             legend.append("rect")
+                .attr("class", "legendBox")
                 .attr("x", width - 38)
                 .attr("y", 2)
                 .attr("width", 20)
                 .attr("height", 6)
                 .style("fill", function(d) {
                     return occGroupScale(d);
-                    });
+                    })
+                
             
             // draw legend text
             legend.append("text")
@@ -224,6 +224,9 @@
                 .text(function(d) {
                     return d;
                     });
+            
+          
+
                   
             /*
             // This code adds labels correctly, but I've commented it out as it's too crowded. Used tooltips instead
@@ -240,7 +243,7 @@
                 .text(function (d){
                                 return d["OccGroup"];});    
             */
-        };   
+        };   // End of the main function create(data).
         
         /*
          Create chart using Dimple
