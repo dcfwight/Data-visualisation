@@ -31,34 +31,75 @@
                       "#fff7fb","#ece2f0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a","#016c59","#014636",
                       "#fff7fb","#ece7f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
         
+        function draw(data) {
+            d3.select("#container")
+                .append("h1")
+                .text("Borrower APR by Occupation and Income Level, using D3 - draw function");
         
-        function create_full(data) {
+            // Create svg variable to use with D3 code 
+            var svg2 = d3.select("#container")
+                .append("svg")
+                    .attr("width", width + margin.top + margin.bottom)
+                    .attr("height", height + margin.left + margin.right)
             
-            // Extract the roll-up function from the nested function
-            function agg_occupation(leaves) {
-                var meanApr = d3.mean(leaves, function(d){
-                    return d['apr'];
-                    });
-                    
-                    return {'meanAPR': meanApr,
-                            'count': leaves.length};
-            }
-            
-            
-            // nest the data by Occupation Group then by Income Range
-            var nested = d3.nest()
-                .key(function(d) {
-                    return d['OccGroup'];
-                })
-                .key(function(d){
-                    return d['income'];
-                })
-                .rollup(agg_occupation)
-                .entries(data);
-                debugger;
+            // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
+            // equivalent to 'div' in HTML
+            var myChart2 = svg2.append("g")
+                .attr("transform","translate(" + margin.left +"," + margin.top +")")
+                .attr("width", width);
                 
-        };// END of function create_full(data)
+            
+                
+            function plot_points(data) {
+                
+                // Extract the roll-up function from the nested function
+                function agg_occupation(leaves) {
+                    var meanApr = d3.mean(leaves, function(d){
+                        return d['apr'];
+                        });
+                        
+                        return {'meanAPR': meanApr};
+                }
+                
+                // nest the data by Occupation Group then by Income Range
+                var nested = d3.nest()
+                    .key(function(d) {
+                        return d['OccGroup'];
+                    })
+                    .key(function(d){
+                        return d['income'];
+                    })
+                    .rollup(agg_occupation)
+                    .entries(data);
+                
+                var occGroupScale2 = d3.scale.ordinal()
+                    .domain(nested.keys)
+                    .range(colors);
+                
+                // this function extracts the maximum meanAPR from a nested item - the lowest level
+                // you then need to iterate over the nested[i].values
+                function maxApr(nested_item) {
+                    return d3.max(nested_item, function(d) {
+                        return d.values.meanAPR;})
+                }
+                
+                // this then returns the maximum of the maximum meanAPRs
+                function maxAprGroup(double_nest) {
+                    return d3.max(double_nest, function(d){
+                        return maxApr(d.values);})
+                }
+            
+                //Constructing the axes - first find the extent of the data range for each axis
+                var yScale2 = d3.scale.linear()
+                    .domain([0,maxAprGroup(nested)])
+                    .range([height,0])
+                    .nice();
+                debugger;    
+            };// END of function create_full(data)
         
+        plot_points(data);
+        
+        };
         
         function create(data) { 
             // Create a set of unique occupations called 'unique' by adding to it.
@@ -75,11 +116,12 @@
             var occGroupScale = d3.scale.ordinal()
                 .domain(uniqueOcc)
                 .range(colors);
+            
         
             // Modify the element with id="container", in this case a div
             d3.select("#container")
                 .append("h1")
-                .text("Borrower APR by Occupation and Income Level, using D3");
+                .text("Borrower APR by Occupation and Income Level, using D3 - create function");
        
             // Create svg variable to use with D3 code 
             var svg = d3.select("#container")
@@ -298,26 +340,26 @@
             .text("Borrower APR by Occupation and Income Level, using Dimple");
                       
         // Create svg variable to use with Dimple code  
-        var svg2 = d3.select("#container")
+        var svg3 = d3.select("#container")
             .append("svg")
               .attr("width", width + margin.top + margin.bottom)
               .attr("height", height + margin.left + margin.right)
             .append("g")
                 .attr('class','chart');    
 
-        var myChart2 = new dimple.chart(svg2, data);
+        var myChart3 = new dimple.chart(svg3, data);
             
-            var x = myChart2.addCategoryAxis("x", "IncomeRange");
+            var x = myChart3.addCategoryAxis("x", "IncomeRange");
             x.showGridlines = true;
             
-            var y = myChart2.addMeasureAxis("y", "BorrowerAPR");
+            var y = myChart3.addMeasureAxis("y", "BorrowerAPR");
             y.showGridlines = true;
             y.tickFormat =".0%";
             
-            myChart2.addSeries("OccGroup", dimple.plot.line);
-            myChart2.addSeries("OccGroup", dimple.plot.scatter);
+            myChart3.addSeries("OccGroup", dimple.plot.line);
+            myChart3.addSeries("OccGroup", dimple.plot.scatter);
         
-        myChart2.draw();   
+        myChart3.draw();   
              
         };
       </script>
@@ -337,7 +379,7 @@
     */
     d3.csv("data/loans_simple.csv", function(d) {
         return d;
-        }, create_full);
+        }, draw);
     d3.csv("data/apr_data.csv", create);
     d3.csv("data/apr_data.csv", createDimple);
     
