@@ -40,6 +40,32 @@ loans.df <- data.frame(loans_original)
 loans.df$ListingCategory <- factor(loans.df$ListingCategory..numeric.)
 
 ```
+
+```{r, echo=FALSE}
+# create a loans_simple.df with much fewer fields, for use when importing and using in d3
+loans_simple <- data.frame(occupation = loans_original$Occupation,
+                           income = loans_original$IncomeRange,
+                           apr = loans_original$BorrowerAPR)
+
+# remove all lines where APR is 'NA'
+loans_simple <- na.omit(loans_simple)
+# this has the effect of removing 25 data points to 113,912
+```
+
+```{r,echo=FALSE}
+# remove all income levels which are 'not displayed','$0' and 'not employed'
+loans_simple <- loans_simple[loans_simple$income != "Not displayed",]
+loans_simple <- loans_simple[loans_simple$income != "$0",]
+loans_simple <- loans_simple[loans_simple$income != "Not employed",]
+# this has the effect of removing 9,143 data points to 104,769 (8% or original dataset)
+```
+
+```{r,echo=FALSE}
+# simplify the levels and rename them
+loans_simple <- droplevels(loans_simple)
+
+levels(loans_simple$income) <- list("$1-25k" = "$1-24,999", "$100k+" = "$100,000+", "$25-50k" = "$25,000-49,999", "$50-75k" = "$50,000-74,999", "$75-100k" = "$75,000-99,999")
+```
 ###Examine structure of data
 ```{r}
 # names(loans.df)
@@ -48,9 +74,9 @@ summary(loans.df)
 
 ###Histogram of Income Ranges
 ```{r, echo = FALSE}
-ggplot(aes(x=IncomeRange),
-       data = loans.df)+
-  geom_bar(fill="blue") +
+ggplot(aes(x=income),
+       data = loans_simple)+
+  geom_bar(fill="steelblue") +
   scale_x_discrete() +
   xlab('Income Range') +
   ylab('Number')
@@ -225,6 +251,30 @@ levels(loans.df$IncomeRange) <- list("$0k" = "$0", "$1-25k" = "$1-24,999", "$100
 loans.df$IncomeRange = factor(loans.df$IncomeRange,levels(loans.df$IncomeRange)[c(8,1,2,4,5,6,3,7)])
 
 ```
+
+## Amalgamate some of the occupations
+```{r, echo= FALSE}
+# create a new field called OccGroup
+loans_simple$OccGroup <- loans_simple$occupation
+# run code to see summary of levels
+levels(loans_simple$OccGroup)
+# start grouping levels, from bottom up
+levels(loans_simple$OccGroup)[63:66] <- "Tradesman"
+levels(loans_simple$OccGroup)[61:62] <- "Teaching"
+levels(loans_simple$OccGroup)[54:60] <- "Student"
+levels(loans_simple$OccGroup)[49:50] <- "Sales"
+levels(loans_simple$OccGroup)[40] <- "Police Officer"
+levels(loans_simple$OccGroup) [39] <- "Pilot"
+levels(loans_simple$OccGroup)[34:36] <- "Nursing"
+levels(loans_simple$OccGroup)[32:33] <- "Military"
+levels(loans_simple$OccGroup)[18:20] <- "Engineer"
+levels(loans_simple$OccGroup)[14] <- "Programmer"
+levels(loans_simple$OccGroup)[3] <- "Admin Assistant"
+levels(loans_simple$OccGroup)[2] <- "Accountant"
+levels(loans_simple$OccGroup)[1] <- "None provided"
+levels(loans_simple$OccGroup)
+```
+
 
 ###Scatter of Borrower APR vs Income Range- scatter chart with jitter
 ```{r, echo = FALSE}
@@ -646,7 +696,7 @@ ggplot(aes(x = IncomeRange,
        data =  subset(AprMean, OccGroup == "Analyst")
          ) +
   geom_line(group = 1) +
-  ylab('count') +
+  ylab('Mean APR') +
   xlab('Occupation') +
   ggtitle('Mean BorrowerAPR') +
   theme_light()
