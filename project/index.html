@@ -39,8 +39,7 @@
                            });
             // Then create an array of the values in the set unique - makes code easier later on.
             var uniqueOcc = unique.values();
-            debugger;
-            
+       
             // set up fill values for circles
             var cValue = function(d) { return d.OccGroup;};
         
@@ -178,11 +177,25 @@
                     .attr("stroke",occGroupScale(occupation));
             }; // End of function lineDraw(occupation)
             
+            // create function to filter the line to draw, by Occupation
+            function update(occupation) {
+                var filtered = data.filter(function(d){
+                    return new occupLine(d['OccGroup']) === occupation;
+                    });
+            }
+            debugger;
+            
+            // create simple function to return the key field we will use - makes sure we use
+            // it consistently
+            function key_func(d) {
+                return d['OccGroup'];
+            }
+            
             // Create a loop to draw all the occupation lines
             for (occupation in uniqueOcc) { 
                 var occupData = []
                 for (datum in data) {
-                    if (data[datum]["OccGroup"] === uniqueOcc[occupation]) {
+                    if (key_func(data[datum]) === uniqueOcc[occupation]) {
                     occupData.push(
                         {"IncomeRange":data[datum]["IncomeRange"],
                         "BorrowerAPR":data[datum]["BorrowerAPR"]}
