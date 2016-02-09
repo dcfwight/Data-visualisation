@@ -33,6 +33,19 @@
         
         
         function create_full(data) {
+            
+            // Extract the roll-up function from the nested function
+            function agg_occupation(leaves) {
+                var meanApr = d3.mean(leaves, function(d){
+                    return d['apr'];
+                    });
+                    
+                    return {'meanAPR': meanApr,
+                            'count': leaves.length};
+            }
+            
+            
+            // nest the data by Occupation Group then by Income Range
             var nested = d3.nest()
                 .key(function(d) {
                     return d['OccGroup'];
@@ -40,15 +53,7 @@
                 .key(function(d){
                     return d['income'];
                 })
-                .rollup(function(leaves) {
-                    var meanApr = d3.mean(leaves, function(d){
-                        return d['apr'];
-                    });
-                    
-                    
-                    return {'meanAPR': meanApr,
-                            'count': leaves.length};
-                })
+                .rollup(agg_occupation)
                 .entries(data);
                 debugger;
                 
