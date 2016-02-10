@@ -34,14 +34,14 @@
         function draw(data) {
             d3.select("#container") // this selects the div with id='container'
                 .append("h1")
-                .text("Borrower APR by Occupation and Income Level, using D3 - draw function")
+                .text("Borrower APR by Occupation and Income Level, using D3")
                 .attr("class", "drawtitle");
         
             // Create svg variable to use with D3 code 
             var svg = d3.select("#container")
                 .append("svg")
-                    .attr("width", width + margin.top + margin.bottom)
-                    .attr("height", height + margin.left + margin.right)
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
                     .attr("class", "svg");
             
             // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
@@ -52,7 +52,6 @@
                 .attr("class", "chart");
                 
             function plot_points(data) {
-                
                 // Extract the roll-up function from the nested function
                 function agg_occupation(leaves) {
                     var meanApr = d3.mean(leaves, function(d){
@@ -200,23 +199,22 @@
                       */
                         
             // draw legend
-            var legend = d3.select(".svg")
+            var legend = d3.select('.svg')
+                .selectAll(".legend")
                 .data(nested)
                     .enter()
                 .append("g")
                     .attr("class", "legend")
-                    .attr("transform", function(d, i) { return "translate(0," + i * 8 +")"; });
-            
-            debugger;
+                    .attr("transform", function(d, i) { return "translate(0," + i * 9 +")"; });
             
             // draw legend colored rectangles - note this could have been chained to the above
             legend.append("rect")
                 .attr("class", "drawLegendBox")
-                .attr("x", width - 38)
+                .attr("x", width - 48)
                 .attr("y", 2)
-                .attr("width", 20)
+                .attr("width", 24)
                 .attr("height", 6)
-                .style('fill','red');
+                .style('fill','steelblue');
                 
                 /*
                 .style("fill", function(d) {
