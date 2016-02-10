@@ -20,10 +20,10 @@
             fillColor = "blue",
             multiplier = 1.75;
         
-        // Create percentageformat variable for use in axes
+        // Create percentage format variable for use in axes
         var formatAsPercentage = d3.format("1%");
         
-        // Create colors (52) for use with the 52 different occupations
+        // Create colors (52) for use with the 52 different occupations - might change
         var colors = ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f",
                       "#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f","#e5c494","#b3b3b3",
                       "#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf","#999999",
@@ -32,24 +32,24 @@
                       "#fff7fb","#ece7f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
         
         function draw(data) {
-            d3.select("#container")
+            d3.select("#container") // this selects the div with id='container'
                 .append("h1")
                 .text("Borrower APR by Occupation and Income Level, using D3 - draw function")
                 .attr("class", "drawtitle");
         
             // Create svg variable to use with D3 code 
-            var svg2 = d3.select("#container")
+            var svg = d3.select("#container")
                 .append("svg")
                     .attr("width", width + margin.top + margin.bottom)
                     .attr("height", height + margin.left + margin.right)
-                    .attr("class", "drawSvg");
+                    .attr("class", "svg");
             
             // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
             // equivalent to 'div' in HTML
-            var myChart2 = svg2.append("g")
+            var myChart = svg.append("g")
                 .attr("transform","translate(" + margin.left +"," + margin.top +")")
                 .attr("width", width)
-                .attr("class", "drawChart");
+                .attr("class", "chart");
                 
             function plot_points(data) {
                 
@@ -73,7 +73,7 @@
                     .rollup(agg_occupation)
                     .entries(data);
                 
-                var occGroupScale2 = d3.scale.ordinal()
+                var occGroupScale = d3.scale.ordinal()
                     .domain(nested.keys)
                     .range(colors);
                 
@@ -105,38 +105,37 @@
                 var radiusScale = d3.scale.sqrt()
                     .domain([0, maxCountGroup(nested)])
                     .range([3,20])
-               
                 
-                //Constructing the axes - first find the extent of the data range for each axis
-                var yScale2 = d3.scale.linear()
+                //Construct the  y axis - first find the extent of the data range for y values
+                var yScale = d3.scale.linear()
                     .domain([0,maxAprGroup(nested)])
                     .range([height,0])
                     .nice();
                 
                 // create the y-axis object (note - not added yet, just defined)
-                var yAxis2 = d3.svg.axis()
-                    .scale(yScale2)
+                var yAxis = d3.svg.axis()
+                    .scale(yScale)
                     .tickSize(5)
                     .tickFormat(formatAsPercentage)
                     .orient("left") // this specifies the orientation of labels to the axis
                     .innerTickSize(legendBuffer-width);
                 
                 // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
-                var xScale2 = d3.scale.ordinal()
+                var xScale = d3.scale.ordinal()
                     .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
                     .rangePoints([0,width - legendBuffer],1);
                 
                 // create the x-axis object (note - not added yet, just defined)
-                var xAxis2 = d3.svg.axis()
-                    .scale(xScale2)
+                var xAxis = d3.svg.axis()
+                    .scale(xScale)
                     .tickSize(5)
                     .orient("bottom");   // this specifies the orientation of labels to the axis
                     
                 // Add the x-axis in it's own 'g' group.    
-                myChart2.append("g")
+                myChart.append("g")
                     .attr("transform","translate(0," + height + ")")
                     .attr("class","x axis")
-                    .call(xAxis2)
+                    .call(xAxis)
                     .append('text')
                         .attr("x", width - legendBuffer)
                         .attr("y", -6)
@@ -144,9 +143,9 @@
                         .text("Income Bracket");
             
                 // Add the y-axis in it's own 'g' group.
-                myChart2.append("g")
+                myChart.append("g")
                     .attr("class","y axis")
-                    .call(yAxis2)
+                    .call(yAxis)
                     .append('text')
                         .attr('transform', "rotate(-90)")
                         .attr('y', 6)
@@ -156,14 +155,14 @@
                         .text('Average Borrower APR');
                         
                 // add the tooltip area to the webpage
-                var tooltip2 = d3.select("body")
+                var tooltip = d3.select("#container")
                     .append("div")
                         .attr("class", "tooltip")
                         .style("width", "150px")
                         .style("opacity", 0);
                 
                 // need to work on the circles code to work with the nested data        
-                var circles2 = d3.select(".drawSvg")
+                var circles = d3.select(".svg")
                     .selectAll("g")
                     .data(nested)
                             .enter()
@@ -177,10 +176,10 @@
                         .append('circle')
                             .attr('class', 'drawcircle')
                             .attr('cx', function(d) {
-                                    return xScale2(d.key) + margin.left;
+                                    return xScale(d.key) + margin.left;
                                     })
                             .attr('cy', function(d) {
-                                    return yScale2(d.values.meanApr);
+                                    return yScale(d.values.meanApr);
                                     })
                             .attr("r", function(d) {
                                     return radiusScale(d.values.count);
@@ -201,7 +200,7 @@
                       */
                         
             // draw legend
-            var legend = d3.select(".drawSvg")
+            var legend = d3.select(".svg")
                 .data(nested)
                     .enter()
                 .append("g")
@@ -247,8 +246,7 @@
     and pass the contents of it to the create function
     */
     d3.csv("data/loans_simple.csv", draw);
-    d3.csv("data/apr_data.csv", create);
-    //d3.csv("data/apr_data.csv", createDimple);
+
     
     </script>
 </body>
