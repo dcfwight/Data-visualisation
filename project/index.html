@@ -19,7 +19,9 @@
         var radius = 4,
             fillColor = "blue",
             multiplier = 1.75;
-        
+            
+        var buckets = ["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"];
+               
         // Create percentage format variable for use in axes
         var formatAsPercentage = d3.format("1%");
         
@@ -50,87 +52,36 @@
                 .attr("transform","translate(" + margin.left +"," + margin.top +")")
                 .attr("width", width)
                 .attr("class", "chart");
+            
+            // Create a set of unique occupations called 'unique' by adding to it.
+            var occupations = d3.set();
+            data.forEach(function(d){
+                occupations.add(d["OccGroup"])
+                           });
+            
+            // then create an array of just the values in this set - makes the rest of the code much easier
+            var uniqueOccupations = occupations.values();
+
+            // the occupations are categorical, so we need an ordinal scale.
+            var colorScale = d3.scale.ordinal()
+                .domain(d3.extent(data, function(d){
+                    return d.OccGroup;
+                    }))
+                .range(colors);
+      
+            
+            // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
+            var xScale = d3.scale.ordinal()
+                .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
+                .rangePoints([0,width - legendBuffer],1);
                 
-            function plot_points(data) {
-                // Extract the roll-up function from the nested function
-                function agg_occupation(leaves) {
-                    var meanApr = d3.mean(leaves, function(d){
-                        return d['apr'];
-                        })
-                        return {"meanApr": meanApr,
-                                "count": leaves.length};
-                }
-                
-                // nest the data by Occupation Group then by Income Range
-                var nested = d3.nest()
-                    .key(function(d) {
-                        return d['OccGroup'];
-                    }).sortKeys(d3.ascending)
-                    .key(function(d){
-                        return d['income'];
-                    })
-                    .rollup(agg_occupation)
-                    .entries(data);
-                
-                var occGroupScale = d3.scale.ordinal()
-                    .domain(nested.keys)
-                    .range(colors);
-                
-                // this function extracts the maximum meanAPR from a nested item - the lowest level
-                // you then need to iterate over the nested[i].values
-                function maxApr(nested_item) {
-                    return d3.max(nested_item, function(d) {
-                        return d.values.meanApr})
-                }
-                
-                // this then returns the maximum of the maximum meanAPRs
-                function maxAprGroup(double_nest) {
-                    return d3.max(double_nest, function(d){
-                        return maxApr(d.values);})
-                }
-                
-                // do the same for the count
-                function maxCount(nested_item) {
-                    return d3.max(nested_item, function(d) {
-                        return d.values.count})
-                }
-                
-                // this then returns the maximum of the maximum meanAPRs
-                function maxCountGroup(double_nest) {
-                    return d3.max(double_nest, function(d){
-                        return maxCount(d.values);})
-                }
-                
-                var radiusScale = d3.scale.sqrt()
-                    .domain([0, maxCountGroup(nested)])
-                    .range([3,20])
-                
-                //Construct the  y axis - first find the extent of the data range for y values
-                var yScale = d3.scale.linear()
-                    .domain([0,maxAprGroup(nested)])
-                    .range([height,0])
-                    .nice();
-                
-                // create the y-axis object (note - not added yet, just defined)
-                var yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .tickSize(5)
-                    .tickFormat(formatAsPercentage)
-                    .orient("left") // this specifies the orientation of labels to the axis
-                    .innerTickSize(legendBuffer-width);
-                
-                // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
-                var xScale = d3.scale.ordinal()
-                    .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
-                    .rangePoints([0,width - legendBuffer],1);
-                
-                // create the x-axis object (note - not added yet, just defined)
+            // create the x-axis object (note - not added yet, just defined)
                 var xAxis = d3.svg.axis()
                     .scale(xScale)
                     .tickSize(5)
-                    .orient("bottom");   // this specifies the orientation of labels to the axis
-                    
-                // Add the x-axis in it's own 'g' group.    
+                    .orient("bottom");   // this specifies the orientation of labels to the axis   
+                
+            // Add the x-axis in it's own 'g' group.    
                 myChart.append("g")
                     .attr("transform","translate(0," + height + ")")
                     .attr("class","x axis")
@@ -139,9 +90,25 @@
                         .attr("x", width - legendBuffer)
                         .attr("y", -6)
                         .style("text-anchor","end")
-                        .text("Income Bracket");
+                        .text("Income Bracket");    
             
-                // Add the y-axis in it's own 'g' group.
+            // construct the y axis scale. This is linear as it is a range of apr values.
+            var yScale = d3.scale.linear()
+                .domain([0,d3.max(data, function(d){
+                    return d.apr;
+                    })])
+                .range([height,0])
+                .nice();
+                
+            // create the y-axis object (note - not added yet, just defined)
+                var yAxis = d3.svg.axis()
+                    .scale(yScale)
+                    .tickSize(5)
+                    .tickFormat(formatAsPercentage)
+                    .orient("left") // this specifies the orientation of labels to the axis
+                    .innerTickSize(legendBuffer-width);
+            
+            // Add the y-axis in it's own 'g' group.
                 myChart.append("g")
                     .attr("class","y axis")
                     .call(yAxis)
@@ -151,8 +118,47 @@
                         .attr('dy', ".71em")
                         .style('text-anchor','end')
                         .style('fill','black')
-                        .text('Average Borrower APR');
-                        
+                        .text('Average Borrower APR');           
+            // draw legend
+            var legend = d3.select('.svg')
+                .selectAll(".legend")
+                .data(uniqueOccupations)
+                    .enter()
+                .append("g")
+                    .attr("class", "legend")
+                    .attr("transform", function(d, i) { return "translate(0," + i * 10 +")"; });
+            
+            // draw legend colored rectangles - note this could have been chained to the above
+            legend.append("rect")
+                .attr("class", "drawLegendBox")
+                .attr("x", width - 58)
+                .attr("y", 2)
+                .attr("width", 34)
+                .attr("height", 8)
+                .style("fill", function(d) {
+                    return colorScale(d );
+                    });
+            
+            // draw legend text
+            legend.append("text")
+                .attr("x", width - 16)
+                .attr("y", 8)
+                //.attr("dy", ".35em")
+                .attr("font-size","10px")
+                .style("text-anchor", "start")
+                .text(function(d) {
+                    return d;
+                    });
+            debugger;    
+            
+            var nested = d3.nest()
+                .key(function(d){
+                    return d.OccGroup;}
+                    ).sortKeys(d3.ascending)
+                .entries(data);
+            debugger;
+            
+            function plot_points(data) {
                 // add the tooltip area to the webpage
                 var tooltip = d3.select("#container")
                     .append("div")
@@ -160,64 +166,45 @@
                         .style("width", "150px")
                         .style("opacity", 0);
                 
+                var circles = d3.select('svg')
+                    .selectAll('circle')
+                    .data(data)
+                        .enter()
+                    .append('circle')
+                        .attr('cx', function(d){
+                            return xScale(d.income) + margin.left;
+                            })
+                        .attr('cy', function(d){
+                            return yScale(d.apr);
+                            })
+                        .attr('r', radius)
+                        .style('fill', function(d){
+                            return colorScale(d.OccGroup);
+                            });
+                
+                /*
                 // need to work on the circles code to work with the nested data        
                 var circles = d3.select(".svg")
-                    .selectAll("g")
-                    .data(nested)
-                            .enter()
-                        .append('g')
-                            .attr('class','circleG')
-                    .selectAll('.circleG')
-                    .data(function(d){
-                        return d.values;
-                    })
+                    .selectAll("circle")
+                    .data(nested, function(d){
+                        return d.values;})
                         .enter()
-                        .append('circle')
-                            .attr('class', 'drawcircle')
-                            .attr('cx', function(d) {
-                                    return xScale(d.key) + margin.left;
-                                    })
-                            .attr('cy', function(d) {
-                                    return yScale(d.values.meanApr);
-                                    })
-                            .attr("r", function(d) {
-                                    return radiusScale(d.values.count);
-                                    })
-                            .style("opacity", 0.5)
-                    .selectAll('.drawcircle')
-                        .style('fill','red');
-                    debugger;
-                    
-                    // NEED to work on this - how to color circles by their occupation
-                    /*
-                    var circles3 = d3.selectAll('.drawcircle')
-                        .data(nested)
-                            .enter()
-                        .style('fill',function(d) {
-                            return "red";
-                            });
-                      */
+                    .append('circle')   
+                        .attr('class','gCircle')
+                        .attr('cx', function(d) {
+                                return xScale(d.income) + margin.left;
+                                })
+                        .attr('cy', function(d) {
+                                return yScale(d.apr);
+                                })
+                        .attr("r", radius)
                         
-            // draw legend
-            var legend = d3.select('.svg')
-                .selectAll(".legend")
-                .data(nested)
-                    .enter()
-                .append("g")
-                    .attr("class", "legend")
-                    .attr("transform", function(d, i) { return "translate(0," + i * 9 +")"; });
+                        .style("opacity", 0.5);
+                    debugger;
+                */   
+                   
             
-            // draw legend colored rectangles - note this could have been chained to the above
-            legend.append("rect")
-                .attr("class", "drawLegendBox")
-                .attr("x", width - 48)
-                .attr("y", 2)
-                .attr("width", 24)
-                .attr("height", 6)
-                .style("fill", function(d) {
-                    return occGroupScale(d.key);
-                    });
-  
+            
             };// END of function plot points(data)
         
         plot_points(data);
@@ -236,13 +223,8 @@
     </div>
     
     <script type="text/javascript">
-    /*
-    Use D3 to load the CSV file
-    and pass the contents of it to the create function
-    */
-    d3.csv("data/loans_simple.csv", draw);
-
-    
+    //Use D3 to load the CSV file and pass the contents of it to the draw function
+    d3.csv("data/loans_clean.csv", draw);
     </script>
 </body>
 </html>
