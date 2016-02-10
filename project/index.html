@@ -34,21 +34,22 @@
         function draw(data) {
             d3.select("#container")
                 .append("h1")
-                .text("Borrower APR by Occupation and Income Level, using D3 - draw function");
+                .text("Borrower APR by Occupation and Income Level, using D3 - draw function")
+                .attr("class", "drawtitle");
         
             // Create svg variable to use with D3 code 
             var svg2 = d3.select("#container")
                 .append("svg")
                     .attr("width", width + margin.top + margin.bottom)
                     .attr("height", height + margin.left + margin.right)
+                    .attr("class", "drawSvg");
             
             // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
             // equivalent to 'div' in HTML
             var myChart2 = svg2.append("g")
                 .attr("transform","translate(" + margin.left +"," + margin.top +")")
-                .attr("width", width);
-                
-            
+                .attr("width", width)
+                .attr("class", "drawChart");
                 
             function plot_points(data) {
                 
@@ -56,17 +57,15 @@
                 function agg_occupation(leaves) {
                     var meanApr = d3.mean(leaves, function(d){
                         return d['apr'];
-                        });
-                        
-                        return {'meanAPR': meanApr,
-                                'count':leaves.length};
+                        })
+                        return meanApr;
                 }
                 
                 // nest the data by Occupation Group then by Income Range
                 var nested = d3.nest()
                     .key(function(d) {
                         return d['OccGroup'];
-                    })
+                    }).sortKeys(d3.ascending)
                     .key(function(d){
                         return d['income'];
                     })
@@ -81,7 +80,7 @@
                 // you then need to iterate over the nested[i].values
                 function maxApr(nested_item) {
                     return d3.max(nested_item, function(d) {
-                        return d.values.meanAPR;})
+                        return d.values})
                 }
                 
                 // this then returns the maximum of the maximum meanAPRs
@@ -89,12 +88,13 @@
                     return d3.max(double_nest, function(d){
                         return maxApr(d.values);})
                 }
-                debugger;
+                
                 //Constructing the axes - first find the extent of the data range for each axis
                 var yScale2 = d3.scale.linear()
                     .domain([0,maxAprGroup(nested)])
                     .range([height,0])
                     .nice();
+                    debugger;
                 
                 // create the y-axis object (note - not added yet, just defined)
                 var yAxis2 = d3.svg.axis()
@@ -137,7 +137,38 @@
                         .style('text-anchor','end')
                         .style('fill','black')
                         .text('Average Borrower APR');
-                      
+                        
+                // add the tooltip area to the webpage
+                var tooltip2 = d3.select("body")
+                    .append("div")
+                        .attr("class", "tooltip")
+                        .style("width", "150px")
+                        .style("opacity", 0);
+                
+                // need to work on the circles code to work with the nested data        
+                var circles2 = d3.select(".drawSvg")
+                    .selectAll("g")
+                    .data(nested)
+                        .enter()
+                    .append('g')
+                        .attr('class','drawcircle')
+                    .selectAll('.drawcircle')
+                    .data(function(d){
+                        return d.values;
+                    })
+                        .enter()
+                        .append('circle')
+                            .attr('cx', function(d) {
+                                    return xScale2(d.key);
+                                    })
+                            .attr('cy', function(d) {
+                                    return yScale2(d.values);
+                                    })
+                            .attr("r", radius)
+                            .style("opacity", 0.5)
+                            .style("fill", "red");
+                    debugger;
+                                                    
             };// END of function create_full(data)
         
         plot_points(data);
@@ -171,12 +202,14 @@
                 .append("svg")
                     .attr("width", width + margin.top + margin.bottom)
                     .attr("height", height + margin.left + margin.right)
+                    .attr("class", "createSvg");
             
             // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
             // equivalent to 'div' in HTML
             var myChart = svg.append("g")
                 .attr("transform","translate(" + margin.left +"," + margin.top +")")
-                .attr("width", width);
+                .attr("width", width)
+                .attr("class", "createChart");
           
             //Constructing the axes - first find the extent of the data range for each axis
             var yScale = d3.scale.linear()
@@ -248,7 +281,8 @@
             
            
                
-            var circles = d3.select("svg").selectAll("circle")
+            var circles = d3.select(".createSvg")
+                .selectAll("circle")
                 .data(data)
                     .enter()
                 .append('circle')
@@ -298,7 +332,6 @@
                     return new Date(d['OccGroup']) === occupation;
                     });
             }
-            debugger;
             
             // create simple function to return the key field we will use - makes sure we use
             // it consistently
@@ -420,9 +453,7 @@
     Use D3 to load the CSV file
     and pass the contents of it to the create function
     */
-    d3.csv("data/loans_simple.csv", function(d) {
-        return d;
-        }, draw);
+    d3.csv("data/loans_simple.csv", draw);
     d3.csv("data/apr_data.csv", create);
     d3.csv("data/apr_data.csv", createDimple);
     
