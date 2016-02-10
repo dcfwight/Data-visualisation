@@ -214,13 +214,10 @@
                 .attr("y", 2)
                 .attr("width", 24)
                 .attr("height", 6)
-                .style('fill','steelblue');
-                
-                /*
                 .style("fill", function(d) {
-                    return occGroupScale2(d.key);
-                    })
-                */
+                    return occGroupScale(d.key);
+                    });
+  
             };// END of function plot points(data)
         
         plot_points(data);
