@@ -58,7 +58,8 @@
                     var meanApr = d3.mean(leaves, function(d){
                         return d['apr'];
                         })
-                        return meanApr;
+                        return {"meanApr": meanApr,
+                                "count": leaves.length};
                 }
                 
                 // nest the data by Occupation Group then by Income Range
@@ -80,7 +81,7 @@
                 // you then need to iterate over the nested[i].values
                 function maxApr(nested_item) {
                     return d3.max(nested_item, function(d) {
-                        return d.values})
+                        return d.values.meanApr})
                 }
                 
                 // this then returns the maximum of the maximum meanAPRs
@@ -88,6 +89,28 @@
                     return d3.max(double_nest, function(d){
                         return maxApr(d.values);})
                 }
+                
+                // do the same for the count
+                function maxCount(nested_item) {
+                    return d3.max(nested_item, function(d) {
+                        return d.values.count})
+                }
+                
+                // this then returns the maximum of the maximum meanAPRs
+                function maxCountGroup(double_nest) {
+                    return d3.max(double_nest, function(d){
+                        return maxCount(d.values);})
+                }
+                
+                var radiusScale = d3.scale.sqrt()
+                    .domain([0, maxCountGroup(nested)])
+                    .range([3,20])
+                debugger;
+                
+                
+                
+                
+                
                 
                 //Constructing the axes - first find the extent of the data range for each axis
                 var yScale2 = d3.scale.linear()
@@ -149,26 +172,35 @@
                 var circles2 = d3.select(".drawSvg")
                     .selectAll("g")
                     .data(nested)
-                        .enter()
-                    .append('g')
-                        .attr('class','drawcircle')
-                    .selectAll('.drawcircle')
+                            .enter()
+                        .append('g')
+                            .attr('class','circleG')
+                    .selectAll('.circleG')
                     .data(function(d){
                         return d.values;
                     })
                         .enter()
                         .append('circle')
+                            .attr('class', 'drawcircle')
                             .attr('cx', function(d) {
-                                    return xScale2(d.key);
+                                    return xScale2(d.key) + margin.left;
                                     })
                             .attr('cy', function(d) {
-                                    return yScale2(d.values);
+                                    return yScale2(d.values.meanApr);
                                     })
-                            .attr("r", radius)
+                            .attr("r", function(d) {
+                                    return radiusScale(d.values.count);
+                                    })
                             .style("opacity", 0.5)
-                            .style("fill", "red");
+                    .selectAll('.drawcircle')
+                        .style('fill','red');
                     debugger;
-                                                    
+                    
+                    var circles3 = d3.selectAll('.drawcircle')
+                        .data(nested)
+                            .enter()
+                        .style('fill',function(d) { return occGroupScale2(d.key);});
+                
             };// END of function create_full(data)
         
         plot_points(data);
