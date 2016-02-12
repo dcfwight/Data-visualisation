@@ -55,7 +55,7 @@
                 .attr("width", width)
                 .attr("class", "chart");
             
-            // Create a set of unique occupations called 'unique' by adding to it.
+            // Create a set of unique occupations called 'occupations' by adding to it.
             var occupations = d3.set();
             data.forEach(function(d){
                 occupations.add(d["OccGroup"])
@@ -64,34 +64,35 @@
             // then create an array of just the values in this set - makes the rest of the code much easier
             var uniqueOccupations = occupations.values();
 
-            // the occupations are categorical, so we need an ordinal scale.
+            // the occupations are categorical, so we need an ordinal scale for the colors.
             var colorScale = d3.scale.ordinal()
                 .domain(d3.extent(data, function(d){
                     return d.OccGroup;
                     }))
                 .range(colors);
       
-            // the x axis is categorical, so we need an ordinal scale. Check out padding if the data is too close to edges  
+            // the x axis data is categorical, so we need an ordinal scale.
+            // Change the padding if the data is too close to edges  
             var xScale = d3.scale.ordinal()
                 .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
                 .rangePoints([0,width - legendBuffer],1);
                 
-            // create the x-axis object (note - not added yet, just defined)
-                var xAxis = d3.svg.axis()
-                    .scale(xScale)
-                    .tickSize(5)
-                    .orient("bottom");   // this specifies the orientation of labels to the axis   
+            // create the x-axis object (note - not added yet, just defined the variable)
+            var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .tickSize(5)
+                .orient("bottom");   // this specifies the orientation of labels relative to the axis   
                 
             // Add the x-axis in it's own 'g' group.    
-                myChart.append("g")
+            myChart.append("g")
                     .attr("transform","translate(0," + height + ")")
                     .attr("class","x axis")
                     .call(xAxis)
-                    .append('text')
-                        .attr("x", width - legendBuffer)
-                        .attr("y", -6)
-                        .style("text-anchor","end")
-                        .text("Income Bracket");    
+                .append('text')
+                    .attr("x", width - legendBuffer)
+                    .attr("y", -6)
+                    .style("text-anchor","end")
+                    .text("Income Bracket");    
             
             // construct the y axis scale. This is linear as it is a range of apr values.
             var yScale = d3.scale.linear()
@@ -102,25 +103,25 @@
                 .nice();
                 
             // create the y-axis object (note - not added yet, just defined)
-                var yAxis = d3.svg.axis()
-                    .scale(yScale)
-                    .tickSize(5)
-                    .tickFormat(formatAsPercentage)
-                    .orient("left") // this specifies the orientation of labels to the axis
-                    .innerTickSize(legendBuffer-width);
+            var yAxis = d3.svg.axis()
+                .scale(yScale)
+                .tickSize(5)
+                .tickFormat(formatAsPercentage)
+                .orient("left") // this specifies the orientation of labels to the axis
+                .innerTickSize(legendBuffer-width);
             
             // Add the y-axis in it's own 'g' group.
-                myChart.append("g")
+            myChart.append("g")
                     .attr("class","y axis")
                     .call(yAxis)
-                    .append('text')
-                        .attr('transform', "rotate(-90)")
-                        .attr('y',  6)
-                        .attr('x', -4)
-                        .attr('dy', ".71em")
-                        .style('text-anchor','end')
-                        .style('fill','black')
-                        .text('Average Borrower APR');           
+                .append('text')
+                    .attr('transform', "rotate(-90)")
+                    .attr('y',  6)
+                    .attr('x', -4)
+                    .attr('dy', ".71em")
+                    .style('text-anchor','end')
+                    .style('fill','black')
+                    .text('Average Borrower APR');           
             // draw legend
             var legend = d3.select('.svg')
                 .selectAll(".legend")
@@ -141,7 +142,7 @@
                     return colorScale(d );
                     });
             
-            // draw legend text
+            // draw legend text - again, could have chained this to the above
             legend.append("text")
                 .attr("x", width - 16)
                 .attr("y", 8)
@@ -158,23 +159,33 @@
                 .key(function(d){
                     return d.OccGroup;}
                     ).sortKeys(d3.ascending)
-                .entries(data); 
+                .entries(data);
             
+            // create function to plot the circles - note, this is within the draw function    
             function plot_points(data) {
                 
+                // first count the number of data points.
                 var n = data.length;
                 
-                    // add the tooltip area to the webpage
+                // add the tooltip area to the div element with id 'container'
                 var tooltip = d3.select("#container")
                     .append("div")
                         .attr("class", "tooltip")
                         .style("width", "180px")
-                        .style('height',"4  0px")
+                        .style('height',"40px")
                         .style("opacity", 0);
                 
+                // define the key function we are going to be using to select circles
+                function key_func(d) {
+                    return d['OccGroup'];
+                }
+                
+                // bind the data to the circles and enter them.
                 var circles = d3.select('svg')
                     .selectAll('circle')
-                    .data(data)
+                    .data(data, function(d){
+                        return d['OccGroup'];    
+                        })
                         .enter()
                     .append('circle')
                         .attr('cx', function(d){
@@ -250,6 +261,14 @@
                         .attr("stroke", colorScale(occupation));
                 }; // End of function lineDraw(occupation)
                 
+                function update(occupation) {
+                    var filtered = data.filter(function(d){
+                        return d['OccGroup'] === occupation;
+                        });
+                }
+                
+                
+                debugger;
                 // create function to filter the line to draw, by Occupation
                 /* This is not working - not sure what the 'Date' means
                 function update(occupation) {
@@ -268,23 +287,17 @@
                 for (i in uniqueOccupations) {   
                     var occupData = []
                     for (j in data) {
-                        if (data[j].OccGroup === uniqueOccupations[i]) {
-                        occupData.push(
-                            {"income": data[j]["income"],
-                            "apr": data[j]["apr"],
-                            "OccGroup": data[j]["OccGroup"]}
-                        );
-                        }
-                    
+                        if (key_func(data[j]) === uniqueOccupations[i]) {
+                            occupData.push(
+                                {"income": data[j]["income"],
+                                "apr": data[j]["apr"],
+                                "OccGroup": data[j]["OccGroup"]}
+                            );
+                        };
                     };
-                    lineDraw(uniqueOccupations[i], occupData);           
-                    
-                };
                   
-                   
-            
-            
-            
+                    lineDraw(uniqueOccupations[i], occupData);               
+                };
         
         plot_points(data);
         
@@ -304,6 +317,7 @@
     <script type="text/javascript">
     //Use D3 to load the CSV file and pass the contents of it to the draw function
     d3.csv("data/loans_clean.csv", draw);
+    
     </script>
 </body>
 </html>
