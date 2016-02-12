@@ -181,7 +181,10 @@
                         .style('height',"40px")
                         .style("opacity", 0);
                 
-                // bind the data to the circles and enter them.
+                
+                // bind the data to the circles and enter them - using data, not nested.
+                
+                
                 var circles = d3.select('svg')
                     .selectAll('circle')
                     .data(data)
@@ -245,21 +248,21 @@
                         */
                          
             }// END of function plot points(data)    
-                // Create function to draw a line for an occupation group
-                function lineDraw(occupation, occupData) {
+            // Create function to draw a line for an occupation group
+            function lineDraw(occupation, occupData) {
     
-                    // Create function to define pixel points of the line
-                    var line = d3.svg.line()
-                        .x(function(d) { return xScale(d.income) + margin.left; })
-                        .y(function(d) { return yScale(d.apr); });
+                // Create function to define pixel points of the line
+                var line = d3.svg.line()
+                    .x(function(d) { return xScale(d.income) + margin.left; })
+                    .y(function(d) { return yScale(d.apr); });
                 
-                    // Adding path along the points to create a line
-                    svg.append('path')
-                        .datum(occupData)
-                        .attr("class","line")
-                        .attr("d",line)
-                        .attr("stroke","green")
-                        .attr("stroke", colorScale(occupation));
+                // Adding path along the points to create a line
+                svg.append('path')
+                    .datum(occupData)
+                    .attr("class","line")
+                    .attr("d",line)
+                    .attr("stroke","green")
+                    .attr("stroke", colorScale(occupation));
                 }; // End of function lineDraw(occupation)
                 
                 function update(occupation) {
@@ -298,7 +301,11 @@
                     lineDraw(uniqueOccupations[i], occupData);               
                 };
         
-        plot_points(data);
+        subset = data.filter(function(d){
+            return d.OccGroup === 'None provided';
+            })
+        
+        plot_points(subset);
         
         };// END of function draw(data
         
