@@ -263,24 +263,35 @@ levels(loans_simple$OccGroup)[63:66] <- "Tradesman"
 levels(loans_simple$OccGroup)[61:62] <- "Teaching"
 levels(loans_simple$OccGroup)[54:60] <- "Student"
 levels(loans_simple$OccGroup)[49:50] <- "Sales"
+levels(loans_simple$OccGroup)[47] <- "Clergy/Religious"
 levels(loans_simple$OccGroup)[40] <- "Police Officer"
 levels(loans_simple$OccGroup) [39] <- "Pilot"
 levels(loans_simple$OccGroup)[34:36] <- "Nursing"
 levels(loans_simple$OccGroup)[32:33] <- "Military"
+levels(loans_simple$OccGroup)[25] <- "Food Service Mgmt"
 levels(loans_simple$OccGroup)[18:20] <- "Engineer"
+levels(loans_simple$OccGroup)[16:17] <- "Doctor/Dentist"
 levels(loans_simple$OccGroup)[14] <- "Programmer"
+levels(loans_simple$OccGroup)[12] <- "Clergy/Religious"
 levels(loans_simple$OccGroup)[3] <- "Admin Assistant"
 levels(loans_simple$OccGroup)[2] <- "Accountant"
 levels(loans_simple$OccGroup)[1] <- "None provided"
 levels(loans_simple$OccGroup)
 ```
 
+```{r,echo=FALSE}
+# tidy up loans_simple by removing occupation field
+loans_simple$occupation <- NULL
+# write it to a csv file
+write.csv(loans_simple, file = "loans_simple.csv")
+```
+
 
 ###Scatter of Borrower APR vs Income Range- scatter chart with jitter
 ```{r, echo = FALSE}
-ggplot(aes(x= IncomeRange,
-           y= BorrowerRate),
-       data = loans.df)+
+ggplot(aes(x= income,
+           y= apr),
+       data = loans_simple)+
   geom_point(position = "jitter",
              alpha = 1/50,
              col='black') +
@@ -673,7 +684,7 @@ ggplot(aes(x = OccGroupAsc,
 
 # first install statistics package - Rmisc, to allow to use summarySE
 ```{r, echo= FALSE}
-install.pacakges("Rmisc")
+install.packages("Rmisc")
 library(Rmisc)
 ```  
 
@@ -684,10 +695,23 @@ AprMean <- summarySE(loans.df, measurevar = "BorrowerAPR",
                      groupvars = c("IncomeRange","OccGroup"))
 ```
 
+```{r,echo=FALSE}
+AprMean2 <- summarySE(loans_simple, measurevar = "apr",
+                      groupvars = c("income","OccGroup"))
+```
+
 # Remove all rows where the number of entries < limit (say 5). This makes the average more meaningful and less volatile at the expense of data.
 ```{r, echo= FALSE}
 AprMeanReduced <- subset(AprMean, N>=10)
 ```
+
+```{r, echo= FALSE}
+AprMeanReduced2 <- subset(AprMean2, N>=8)
+```
+
+
+
+
 
 ## Create line graph of mean BorrowerAPR against IncomeRange - Note the group has been forced together by 'group = 1'
 ```{r, echo= FALSE}
@@ -836,6 +860,10 @@ AprMeanReducedFinal <- subset(AprMeanReduced,IncomeRange %in%
                         c("$1-25k","$25-50k","$50-75k","$75-100k",
                           "$100k+"))
 write.csv(AprMeanReducedFinal, file = "apr_data.csv")
+```
+
+```{r, echo= FALSE}
+write.csv(AprMeanReduced2, file = "loans_clean.csv")
 ```
 
 
