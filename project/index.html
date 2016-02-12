@@ -249,16 +249,26 @@
                          
             }// END of function plot points(data)    
             // Create function to draw a line for an occupation group
-            function lineDraw(occupation, occupData) {
-    
-                // Create function to define pixel points of the line
+            function lineDraw(occupation, occupation_data) {
+                // first unpack the data
+                var occupLineData = []
+                for (j in occupation_data) {
+                    occupLineData.push(
+                        {"income": occupation_data[j]["income"],
+                        "apr": occupation_data[j]["apr"],
+                        "OccGroup": occupation_data[j]["OccGroup"]}
+                    );
+                   debugger; 
+                }
+                debugger;
+                // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
                     .y(function(d) { return yScale(d.apr); });
                 
                 // Adding path along the points to create a line
                 svg.append('path')
-                    .datum(occupData)
+                    .datum(occupLineData)
                     .attr("class","line")
                     .attr("d",line)
                     .attr("stroke","green")
@@ -270,42 +280,19 @@
                         return d['OccGroup'] === occupation;
                         });
                 }
-                
-                
-                debugger;
-                // create function to filter the line to draw, by Occupation
-                /* This is not working - not sure what the 'Date' means
-                function update(occupation) {
-                    var filtered = data.filter(function(d){
-                        return new Date(d['OccGroup']) === occupation;
-                        });
-                }
-                */
-                
-                // create simple function to return the key field we will use - makes sure we use it consistently
-                
-                
-                // Create a loop to draw all the occupation lines    
-                for (i in uniqueOccupations) {   
-                    var occupData = []
-                    for (j in data) {
-                        if (key_func(data[j]) === uniqueOccupations[i]) {
-                            occupData.push(
-                                {"income": data[j]["income"],
-                                "apr": data[j]["apr"],
-                                "OccGroup": data[j]["OccGroup"]}
-                            );
-                        };
-                    };
-                  
-                    lineDraw(uniqueOccupations[i], occupData);               
-                };
+            
         
         subset = data.filter(function(d){
-            return d.OccGroup === 'None provided';
+            return d.OccGroup === 'Bus Driver';
             })
+        debugger;
+        subset.sort(function(d){
+            return d3.ascending(d.income);
+            })
+        debugger;
         
         plot_points(subset);
+        lineDraw("Bus Driver", subset);
         
         };// END of function draw(data
         
