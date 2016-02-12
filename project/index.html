@@ -161,6 +161,12 @@
                     ).sortKeys(d3.ascending)
                 .entries(data);
             
+            // define the key function we are going to be using to select circles
+            // common to both plot points and line draw, so it is in the draw function    
+            function key_func(d) {
+                return d['OccGroup'];
+            }
+            
             // create function to plot the circles - note, this is within the draw function    
             function plot_points(data) {
                 
@@ -175,17 +181,10 @@
                         .style('height',"40px")
                         .style("opacity", 0);
                 
-                // define the key function we are going to be using to select circles
-                function key_func(d) {
-                    return d['OccGroup'];
-                }
-                
                 // bind the data to the circles and enter them.
                 var circles = d3.select('svg')
                     .selectAll('circle')
-                    .data(data, function(d){
-                        return d['OccGroup'];    
-                        })
+                    .data(data)
                         .enter()
                     .append('circle')
                         .attr('cx', function(d){
@@ -242,8 +241,10 @@
                                 
                                 .style("opacity", 0.5);
                             debugger;
-                        */ 
-            };// END of function plot points(data)    
+            
+                        */
+                         
+            }// END of function plot points(data)    
                 // Create function to draw a line for an occupation group
                 function lineDraw(occupation, occupData) {
     
@@ -279,9 +280,7 @@
                 */
                 
                 // create simple function to return the key field we will use - makes sure we use it consistently
-                function key_func(d) {
-                    return d['OccGroup'];
-                };
+                
                 
                 // Create a loop to draw all the occupation lines    
                 for (i in uniqueOccupations) {   
