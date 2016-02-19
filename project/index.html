@@ -4,8 +4,7 @@
 <head>
     <title>Prosper Loan Analysis</title>
     <meta charset="utf-8">
-    <script src="d3.min.js"></script>
-    <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+    <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <link rel="stylesheet" type="text/css" href="css/style.css">
     
     <script type="text/javascript">
@@ -35,11 +34,12 @@
         
         var duration = 1000 // duration time for transitions
         
+        
         function draw(data) {
             d3.select("#container") // this selects the div with id='container'
                 .append("h1")
-                .text("Borrower APR by Occupation and Income Level, using D3")
-                .attr("class", "drawtitle");
+                .attr("class", "drawtitle")
+                .text("Occupation");
         
             // Create svg variable to use with D3 code 
             var svg = d3.select("#container")
@@ -63,6 +63,8 @@
             
             // then create an array of just the values in this set - makes the rest of the code much easier
             var uniqueOccupations = occupations.values();
+            // sort them alphabetically
+            uniqueOccupations.sort(d3.ascending);
 
             // the occupations are categorical, so we need an ordinal scale for the colors.
             var colorScale = d3.scale.ordinal()
@@ -96,7 +98,7 @@
             
             // construct the y axis scale. This is linear as it is a range of apr values.
             var yScale = d3.scale.linear()
-                .domain([0,d3.max(data, function(d){
+                .domain([0.16,d3.max(data, function(d){
                     return d.apr;
                     })])
                 .range([height,0])
@@ -123,36 +125,39 @@
                     .style('fill','black')
                     .text('Average Borrower APR');           
             // draw legend
-            var legend = d3.select('.svg')
-                .selectAll(".legend")
-                .data(uniqueOccupations)
-                    .enter()
-                .append("g")
-                    .attr("class", "legend")
-                    .attr("transform", function(d, i) { return "translate(0," + i * 10 +")"; });
             
-            // draw legend colored rectangles - note this could have been chained to the above
-            legend.append("rect")
-                .attr("class", "drawLegendBox")
-                .attr("x", width - 58)
-                .attr("y", 2)
-                .attr("width", 34)
-                .attr("height", 8)
-                .style("fill", function(d) {
-                    return colorScale(d );
-                    });
-            
-            // draw legend text - again, could have chained this to the above
-            legend.append("text")
-                .attr("x", width - 16)
-                .attr("y", 8)
-                //.attr("dy", ".35em")
-                .attr("font-size","10px")
-                .style("text-anchor", "start")
-                .text(function(d,i) {
-                    return (i+1) + ":"+ d;
-                    });
+            function legendDraw(occupations) { 
+                var legend = d3.select('.svg')
+                    .selectAll(".legend")
+                    .data(occupations)
+                        .enter()
+                    .append("g")
+                        .attr("class", "legend")
+                        .attr("transform", function(d, i) { return "translate(0," + i * 10 +")"; });
                 
+                // draw legend colored rectangles - note this could have been chained to the above
+                legend.append("rect")
+                    .attr("class", "drawLegendBox")
+                    .attr("x", width - 58)
+                    .attr("y", 2)
+                    .attr("width", 34)
+                    .attr("height", 8)
+                    .style("fill", function(d) {
+                        return colorScale(d );
+                        });
+                
+                // draw legend text - again, could have chained this to the above
+                legend.append("text")
+                    .attr("x", width - 16)
+                    .attr("y", 8)
+                    //.attr("dy", ".35em")
+                    .attr("font-size","10px")
+                    .style("text-anchor", "start")
+                    .text(function(d,i) {
+                        return (i+1) + ":"+ d;
+                        });
+            } // end of legendDraw funciton
+            
             // created a nested function, grouping the data by Occupation group.
             // not sure if I'm going to use it.
             var nested = d3.nest()
@@ -172,27 +177,28 @@
             // define the key function we are going to be using to select circles and lines
             // common to both plot points and line draw, so it is in the draw function    
             function key_func(d) {
-                return d['OccGroup'];
+                return d['item'];
             }
             
             // create function to plot the circles - note, this is within the draw function    
             function plot_points(occupation_data) {
-                
-                // first count the number of data points.
-                var n = occupation_data.length;
                 // bind the data to the circles and enter them - using data, not nested.
                 
-                // tried using datum instead of data.enter()
-                // removed .data(data).enter()
+                
                 var circles = svg.selectAll('circle')
-                    .data(occupation_data)
-                        .enter()
+                    .data(occupation_data, key_func);
+                
+                circles.exit()
+                    .remove()
+                    
+                circles.enter()
                     .append('circle')
+                        .attr('class','plottedCircle')
                         .attr('cx', function(d){
                             return xScale(d.income) + margin.left;
                             })
                         .attr('cy', function(d){
-                            return yScale(+d.apr);
+                            return yScale(d.apr) + margin.top;
                             })
                         .attr('r', radius)
                         .style('fill', function(d){
@@ -215,55 +221,25 @@
                             .duration(500)
                             .style("opacity", 0);
                         });
-                        debugger;
-                        
-                        /* this transition code works, but then it fouls up the tooltip - don't know why
-                        .transition()
-                                    .delay(function(d, i) { return (i / n) * duration; })
-                                    .duration(duration)
-                                    .style("opacity", 0.3)
-                        */
-                        
-                        /*
-                        // need to work on the circles code to work with the nested data        
-                        var circles = d3.select(".svg")
-                            .selectAll("circle")
-                            .data(nested, function(d){
-                                return d.values;})
-                                .enter()
-                            .append('circle')   
-                                .attr('class','gCircle')
-                                .attr('cx', function(d) {
-                                        return xScale(d.income) + margin.left;
-                                        })
-                                .attr('cy', function(d) {
-                                        return yScale(d.apr);
-                                        })
-                                .attr("r", radius)
-                                
-                                .style("opacity", 0.5);
-                            debugger;
-            
-                        */
-                         
+                    debugger;  
             }// END of function plot points(data)    
             
             // Create function to draw a line for an occupation group
-            function lineDraw(occupation_data) {
+            function lineDraw(occupation, occupation_data) {
                 // first unpack the data
                 var occupLineData = [];
-                var occupation = occupation_data[1]["OccGroup"];
                 for (j in occupation_data) {
                     occupLineData.push(
                         {"income": occupation_data[j]["income"],
-                        "apr": occupation_data[j]["apr"]}
+                        "apr": occupation_data[j]["apr"],
+                        "OccGroup": occupation_data[j]["OccGroup"]}
                     ); 
                 }
-                
+    
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
-                    .y(function(d) { return yScale(d.apr); });
+                    .y(function(d) { return yScale(d.apr) +margin.top; });
                 
                 // Adding path along the points to create a line
                 svg.append('path')
@@ -274,23 +250,23 @@
                     .attr("stroke", colorScale(occupation))
                     .transition()
                     .duration(200);
-            debugger;
+            
+             
             }; // End of function lineDraw(occupation)
                 
             // define update function, to plot the data for a specific occupaiont
             function update(occupation) {
+                d3.select("h1")
+                    .text(occupation);
+            
                 // first filter the data to return only datapoints equal to that occupation
                 subset = data.filter(function(d){
                     return d.OccGroup === occupation;
                     });
+         
+                plot_points(subset); // pass those points to the plot_points function
                 
-                debugger;
-                
-                var circles = svg.selectAll('circle')
-                    .data(subset)
-                
-                //plot_points(subset); // pass those points to the plot_points function
-                lineDraw(subset); // pass those points to the lineDraw function
+                lineDraw(occupation, subset); // pass those points to the lineDraw function
             }
         
         // to loop through all occupations:
@@ -302,27 +278,22 @@
             
             if (occup_idx >= uniqueOccupations.length) {
                 clearInterval(occupation_interval);
+                
+                var circles = plot_points(data);
+                
+                var legends = legendDraw(uniqueOccupations);
+                
+                d3.select('h1')
+                    .text('Occupations');
             }
-        }, 50);
-        /*
-        for (i in uniqueOccupations) {
-            update(uniqueOccupations[i]);
-            debugger;
-        }
-        */
-        plot_points(data);
-        
+        }, 200);
+    
         };// END of function draw(data
-        
-        
+            
       </script>
 </head>
 <body>
     <div id="container">
-        <h1>Udacity Data Analysis Nano Degree</h1>
-        <h2>Project 6: Make Effective Data Visualization</h2>
-        <h2>Author: Doug Wight</h2>
-        <h3>Submission date: February 2016</h3>
     </div>
     
     <script type="text/javascript">
