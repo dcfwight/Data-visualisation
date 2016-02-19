@@ -160,35 +160,32 @@
                     return d.OccGroup;}
                     ).sortKeys(d3.ascending)
                 .entries(data);
+                
+            // add the tooltip area to the div element with id 'container'
+            var tooltip = d3.select("#container")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("width", "180px")
+                .style('height',"40px")
+                .style("opacity", 0);
             
-            // define the key function we are going to be using to select circles
+            // define the key function we are going to be using to select circles and lines
             // common to both plot points and line draw, so it is in the draw function    
             function key_func(d) {
                 return d['OccGroup'];
             }
             
             // create function to plot the circles - note, this is within the draw function    
-            function plot_points(data) {
+            function plot_points(occupation_data) {
                 
                 // first count the number of data points.
-                var n = data.length;
-                
-                // add the tooltip area to the div element with id 'container'
-                var tooltip = d3.select("#container")
-                    .append("div")
-                        .attr("class", "tooltip")
-                        .style("width", "180px")
-                        .style('height',"40px")
-                        .style("opacity", 0);
-                
-                
+                var n = occupation_data.length;
                 // bind the data to the circles and enter them - using data, not nested.
                 
                 // tried using datum instead of data.enter()
                 // removed .data(data).enter()
-                var circles = d3.select('svg')
-                    .selectAll('circle')
-                    .data(data)
+                var circles = svg.selectAll('circle')
+                    .data(occupation_data)
                         .enter()
                     .append('circle')
                         .attr('cx', function(d){
@@ -274,7 +271,9 @@
                     .attr("class","line")
                     .attr("d",line)
                     .attr("stroke","green")
-                    .attr("stroke", colorScale(occupation));
+                    .attr("stroke", colorScale(occupation))
+                    .transition()
+                    .duration(200);
             }; // End of function lineDraw(occupation)
                 
             // define update function, to plot the data for a specific occupaiont
@@ -283,6 +282,12 @@
                 subset = data.filter(function(d){
                     return d.OccGroup === occupation;
                     });
+                
+                debugger;
+                
+                var circles = svg.selectAll('circle')
+                    .data(subset)
+                
                 //plot_points(subset); // pass those points to the plot_points function
                 lineDraw(occupation, subset); // pass those points to the lineDraw function
             }
@@ -297,7 +302,7 @@
             if (occup_idx >= uniqueOccupations.length) {
                 clearInterval(occupation_interval);
             }
-        }, 100);
+        }, 50);
         /*
         for (i in uniqueOccupations) {
             update(uniqueOccupations[i]);
