@@ -249,14 +249,14 @@
             }// END of function plot points(data)    
             
             // Create function to draw a line for an occupation group
-            function lineDraw(occupation, occupation_data) {
+            function lineDraw(occupation_data) {
                 // first unpack the data
-                var occupLineData = []
+                var occupLineData = [];
+                var occupation = occupation_data[1]["OccGroup"];
                 for (j in occupation_data) {
                     occupLineData.push(
                         {"income": occupation_data[j]["income"],
-                        "apr": occupation_data[j]["apr"],
-                        "OccGroup": occupation_data[j]["OccGroup"]}
+                        "apr": occupation_data[j]["apr"]}
                     ); 
                 }
                 
@@ -274,6 +274,7 @@
                     .attr("stroke", colorScale(occupation))
                     .transition()
                     .duration(200);
+            debugger;
             }; // End of function lineDraw(occupation)
                 
             // define update function, to plot the data for a specific occupaiont
@@ -289,7 +290,7 @@
                     .data(subset)
                 
                 //plot_points(subset); // pass those points to the plot_points function
-                lineDraw(occupation, subset); // pass those points to the lineDraw function
+                lineDraw(subset); // pass those points to the lineDraw function
             }
         
         // to loop through all occupations:
