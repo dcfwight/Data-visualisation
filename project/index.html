@@ -162,16 +162,28 @@
             } // end of legendDraw funciton
             
             // created a nested function, grouping the data by Occupation group.
-            // not sure if I'm going to use it.
             var nested = d3.nest()
                 .key(function(d){
                     return d.OccGroup;
                     }
                     ).sortKeys(d3.ascending)
                 .entries(data);
-            debugger;
             
-             
+            // create linesArray which reshapes the data into easier format to use with linedraw function
+            var linesArray = [];
+            for (i in nested){
+                pathInfo = [];
+                for (j in nested[i].values){
+                    pathInfo.push({'id': nested[i].values[j].id,
+                                    'apr': nested[i].values[j].apr,
+                                    'income': nested[i].values[j].income});
+                    }
+               
+                linesArray.push({'key': nested[i].key,
+                                'values': pathInfo});
+            }
+
+            
             // add the tooltip area to the div element with id 'container'
             var tooltip = d3.select("#container")
                 .append("div")
@@ -228,44 +240,32 @@
             
             
             // Create function to draw a line for an occupation group
-            function lineDraw(occupation, occupation_data) {
-                // first unpack the data
-                pathInfo = [];
+            function lineDraw(occupation_data) {
                 
-                for (j in occupation_data) {
-                    pathInfo.push(
-                        {"id": occupation_data[j]['id'],
-                        "income": occupation_data[j]["income"],
-                        "apr": occupation_data[j]["apr"]}
-                    ); 
-                };
-                
-                // create an array with key and values 
-                linePathInfo = [{'key': occupation, 'values': pathInfo}];
-                    
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
                     .y(function(d) { return yScale(d.apr) +margin.top; })
                     .interpolate("linear");
                 
-                
                 var linePath = d3.select('svg')
                     .selectAll('.occupLine')
-                    .data(linePathInfo, function(d){
+                    .data(occupation_data, function(d){
                         return d.key;
                         });
                     
                 linePath.enter()
                     .append('g')
                         .attr('class','occupLine')
-                        .attr('class','line');
+                        .attr('class','line')
+                        .style('stroke', (function(d){
+                            return colorScale(d.key);
+                            }));
                 
                 linePath.append('path')
                         .attr('d', function(d){
                             return line(d.values);
-                            })
-                        .style('stroke', colorScale(occupation));
+                            });
             }; // End of function lineDraw(occupation)
                 
             // define update function, to plot the data for a specific occupaiont
@@ -277,10 +277,12 @@
                 subset = data.filter(function(d){
                     return d.OccGroup === occupation;
                     });
-         
+                subset2 = linesArray.filter(function(d){
+                    return d.key === occupation;
+                    });
                 plot_points(subset); // pass those points to the plot_points function
                 
-                lineDraw(occupation, subset); // pass those points to the lineDraw function
+                lineDraw(subset2); // pass those points to the lineDraw function
                 debugger;
             }
         
