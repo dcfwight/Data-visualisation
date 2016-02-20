@@ -25,12 +25,12 @@
         var formatAsPercentage = d3.format("1%");
         
         // Create colors (52) for use with the 52 different occupations - might change
-        var colors = ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f",
-                      "#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f","#e5c494","#b3b3b3",
-                      "#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628","#f781bf","#c9d9d9",
-                      "#b7fcfd","#d545f9","#ccece6","#99d8c9","#66c2a4","#41ae76","#238b45","#006d2c","#00441b",
-                      "#fff7fb","#ece2f0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a","#016c59","#014636",
-                      "#fff7fb","#ece7f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
+        var colors = ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9",
+                      "#bc80bd","#ccebc5","#ffed6f","#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f",
+                      "#e5c494","#b3b3b3","#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628",
+                      "#f781bf","#c9d9d9","#b7fcfd","#d545f9","#ccece6","#99d8c9","#66c2a4","#41ae76","#238b45",
+                      "#006d2c","#11441b","#bba7fb","#ecedb0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a",
+                      "#016c59","#01cd36","#f137fb","#e267f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
         
         var duration = 1000 // duration time for transitions
         
@@ -133,7 +133,9 @@
                         .enter()
                     .append("g")
                         .attr("class", "legend")
-                        .attr("transform", function(d, i) { return "translate(0," + i * 10 +")"; });
+                        .attr("transform", function(d, i) {
+                            return "translate(0," + i * 10 +")";
+                            });
                 
                 // draw legend colored rectangles - note this could have been chained to the above
                 legend.append("rect")
@@ -156,16 +158,20 @@
                     .text(function(d,i) {
                         return (i+1) + ":"+ d;
                         });
+            
             } // end of legendDraw funciton
             
             // created a nested function, grouping the data by Occupation group.
             // not sure if I'm going to use it.
             var nested = d3.nest()
                 .key(function(d){
-                    return d.OccGroup;}
+                    return d.OccGroup;
+                    }
                     ).sortKeys(d3.ascending)
                 .entries(data);
-                
+            debugger;
+            
+             
             // add the tooltip area to the div element with id 'container'
             var tooltip = d3.select("#container")
                 .append("div")
@@ -174,22 +180,17 @@
                 .style('height',"40px")
                 .style("opacity", 0);
             
-            // define the key function we are going to be using to select circles and lines
-            // common to both plot points and line draw, so it is in the draw function    
-            function key_func(d) {
-                return d['item'];
-            }
-            
             // create function to plot the circles - note, this is within the draw function    
             function plot_points(occupation_data) {
                 // bind the data to the circles and enter them - using data, not nested.
                 
-                
                 var circles = svg.selectAll('circle')
-                    .data(occupation_data, key_func);
-                
+                    .data(occupation_data, function(d){
+                        return d['id'];
+                        });
+                    
                 circles.exit()
-                    .remove()
+                        .remove();
                     
                 circles.enter()
                     .append('circle')
@@ -221,37 +222,50 @@
                             .duration(500)
                             .style("opacity", 0);
                         });
-                    debugger;  
+                
             }// END of function plot points(data)    
+            
+            
             
             // Create function to draw a line for an occupation group
             function lineDraw(occupation, occupation_data) {
                 // first unpack the data
-                var occupLineData = [];
+                pathInfo = [];
+                
                 for (j in occupation_data) {
-                    occupLineData.push(
-                        {"income": occupation_data[j]["income"],
-                        "apr": occupation_data[j]["apr"],
-                        "OccGroup": occupation_data[j]["OccGroup"]}
+                    pathInfo.push(
+                        {"id": occupation_data[j]['id'],
+                        "income": occupation_data[j]["income"],
+                        "apr": occupation_data[j]["apr"]}
                     ); 
-                }
-    
+                };
+                
+                // create an array with key and values 
+                linePathInfo = [{'key': occupation, 'values': pathInfo}];
+                    
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
-                    .y(function(d) { return yScale(d.apr) +margin.top; });
+                    .y(function(d) { return yScale(d.apr) +margin.top; })
+                    .interpolate("linear");
                 
-                // Adding path along the points to create a line
-                svg.append('path')
-                    .datum(occupLineData)
-                    .attr("class","line")
-                    .attr("d",line)
-                    .attr("stroke","green")
-                    .attr("stroke", colorScale(occupation))
-                    .transition()
-                    .duration(200);
-            
-             
+                
+                var linePath = d3.select('svg')
+                    .selectAll('.occupLine')
+                    .data(linePathInfo, function(d){
+                        return d.key;
+                        });
+                    
+                linePath.enter()
+                    .append('g')
+                        .attr('class','occupLine')
+                        .attr('class','line');
+                
+                linePath.append('path')
+                        .attr('d', function(d){
+                            return line(d.values);
+                            })
+                        .style('stroke', colorScale(occupation));
             }; // End of function lineDraw(occupation)
                 
             // define update function, to plot the data for a specific occupaiont
@@ -267,6 +281,7 @@
                 plot_points(subset); // pass those points to the plot_points function
                 
                 lineDraw(occupation, subset); // pass those points to the lineDraw function
+                debugger;
             }
         
         // to loop through all occupations:
@@ -286,7 +301,7 @@
                 d3.select('h1')
                     .text('Occupations');
             }
-        }, 200);
+        }, 80);
     
         };// END of function draw(data
             
