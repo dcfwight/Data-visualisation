@@ -98,7 +98,7 @@
             
             // construct the y axis scale. This is linear as it is a range of apr values.
             var yScale = d3.scale.linear()
-                .domain([0.16,d3.max(data, function(d){
+                .domain([0,d3.max(data, function(d){
                     return d.apr;
                     })])
                 .range([height,0])
@@ -135,17 +135,17 @@
                         .attr("class", "legend")
                         .attr("transform", function(d, i) {
                             return "translate(0," + i * 10 +")";
-                            });
+                            })
                 
                 // draw legend colored rectangles - note this could have been chained to the above
                 legend.append("rect")
-                    .attr("class", "drawLegendBox")
+                    .attr("class", "legendBox")
                     .attr("x", width - 58)
                     .attr("y", 2)
                     .attr("width", 34)
                     .attr("height", 8)
                     .style("fill", function(d) {
-                        return colorScale(d );
+                        return colorScale(d);
                         });
                 
                 // draw legend text - again, could have chained this to the above
@@ -158,6 +158,37 @@
                     .text(function(d,i) {
                         return (i+1) + ":"+ d;
                         });
+                
+                legend.on("click", function(d) {
+                    
+                    d3.selectAll(".legend")
+                        .select('rect')
+                      .transition()
+                      .duration(500)
+                      .style("fill", function(d) {
+                        return colorScale(d);
+                        })
+                    
+                    d3.selectAll(".legend")  
+                      .select('text')
+                      .transition()
+                      .duration(500)
+                      .style('fill','black')
+                      .attr("font-size","10px")
+                      .attr("x", width - 16)
+                        .attr("y", 8)
+                      ;
+               
+                    d3.select(this)
+                        .select('text')
+                      .transition()
+                      .duration(500)
+                      .style("fill", "red")
+                      .attr("font-size","20px")
+                      .attr("x", width - 156)
+                    .attr("y", 8);
+                    update(d);
+                });
             
             } // end of legendDraw funciton
             
@@ -273,17 +304,17 @@
                 d3.select("h1")
                     .text(occupation);
             
-                // first filter the data to return only datapoints equal to that occupation
-                subset = data.filter(function(d){
+                // first filter the main data to return only datapoints equal to that occupation
+                occup_points_data = data.filter(function(d){
                     return d.OccGroup === occupation;
                     });
-                subset2 = linesArray.filter(function(d){
+                // also filter the linesArray for datapoints equal to that occupation
+                occup_line_data = linesArray.filter(function(d){
                     return d.key === occupation;
                     });
-                plot_points(subset); // pass those points to the plot_points function
+                plot_points(occup_points_data); // pass those points to the plot_points function
                 
-                lineDraw(subset2); // pass those points to the lineDraw function
-                debugger;
+                lineDraw(occup_line_data); // pass those points to the lineDraw function
             }
         
         // to loop through all occupations:
@@ -303,8 +334,14 @@
                 d3.select('h1')
                     .text('Occupations');
             }
-        }, 80);
-    
+        }, 20);
+        
+        function highlightOccupation(occupation) {
+            
+            // change size of circles and line, and increase opacity
+            // use this for when hovering over the legend items
+        }
+        
         };// END of function draw(data
             
       </script>
