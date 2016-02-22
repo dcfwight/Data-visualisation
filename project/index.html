@@ -186,8 +186,10 @@
                       .style("fill", "red")
                       .attr("font-size","20px")
                       .attr("x", width - 156)
-                    .attr("y", 8);
+                    .attr("y", 12);
+                    
                     update(d);
+                    debugger;
                 });
             
             } // end of legendDraw funciton
@@ -272,7 +274,7 @@
             
             // Create function to draw a line for an occupation group
             function lineDraw(occupation_data) {
-                
+                debugger;
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
@@ -288,15 +290,19 @@
                 linePath.enter()
                     .append('g')
                         .attr('class','occupLine')
-                        .attr('class','line')
                         .style('stroke', (function(d){
                             return colorScale(d.key);
                             }));
                 
+                linePath.exit().remove();
+                
                 linePath.append('path')
+                        .attr('class','line')
                         .attr('d', function(d){
                             return line(d.values);
                             });
+                        
+                linePath.exit().remove();
             }; // End of function lineDraw(occupation)
                 
             // define update function, to plot the data for a specific occupaiont
@@ -328,13 +334,14 @@
                 clearInterval(occupation_interval);
                 
                 var circles = plot_points(data);
+                var lines = lineDraw(linesArray);
                 
                 var legends = legendDraw(uniqueOccupations);
                 
                 d3.select('h1')
                     .text('Occupations');
             }
-        }, 20);
+        }, 50);
         
         function highlightOccupation(occupation) {
             
