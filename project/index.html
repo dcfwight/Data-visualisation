@@ -239,7 +239,7 @@
                 })   
                 .entries(data);
             debugger;
-            
+            // create the circles for the average APR
             var avgCircles = svg.selectAll('.averageCircle')
                 .data(nestedIncome)
                     .enter()
@@ -270,10 +270,6 @@
                     .duration(500)
                     .style("opacity", 0);
                 });
-              
-                
-                
-            debugger;
             
             // create linesArray which reshapes the data into easier format to use with linedraw function
             var linesArray = [];
@@ -343,17 +339,16 @@
                 
             }// END of function plot points(data)    
             
-            
-            
             // Create function to draw a line for an occupation group
             function lineDraw(occupation_data) {
-              
+                
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
                     .y(function(d) { return yScale(d.apr) +margin.top; })
                     .interpolate("linear");
                 
+                // create the linePath for all the individual occupations
                 var linePath = d3.select('svg')
                     .selectAll('.occupLine')
                     .data(occupation_data, function(d){
@@ -376,9 +371,27 @@
                             });
                         
                 linePath.exit().remove();
-            }; // End of function lineDraw(occupation)
+                 }; // End of function lineDraw(occupation)
+            
+            function lineDrawAverage(averagedata) {
+                 // now create the linePath for the average - this stays on the screen.
+               
+                // create slightly different line format to deal with the average data 
+                var averageLine =  d3.svg.line()
+                    .x(function(d) { return xScale(d.key) + margin.left; })
+                    .y(function(d) { return yScale(d.values) +margin.top; })
+                    .interpolate("linear");       
                 
-            // define update function, to plot the data for a specific occupaiont
+                var averageLinePath = d3.select('svg')
+                    .append('path')
+                    .attr('d', averageLine(averagedata))
+                    .attr('stroke','black')
+                    .attr('stroke-width',4)
+                    .attr('fill','none');
+      
+            } // end of lineDrawAverage function
+                
+            // define update function, to plot the data for a specific occupation
             function update(occupation) {
                 d3.select("h1.drawtitle")
                     .text(occupation);
@@ -396,7 +409,10 @@
                 lineDraw(occup_line_data); // pass those points to the lineDraw function
             }
         
-        // to loop through all occupations:
+        // first draw the line for the averages
+        lineDrawAverage(nestedIncome);
+    
+        // to loop through all occupations, drawing circles and points:
         occup_idx = 0
         
         var occupation_interval = setInterval(function(){
@@ -418,7 +434,8 @@
         
         
         };// END of function draw(data
-            
+        
+          
       </script>
 </head>
 <body>
