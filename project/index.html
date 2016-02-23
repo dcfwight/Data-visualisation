@@ -36,6 +36,11 @@
         
         
         function draw(data) {
+            d3.select("#container")
+                .append('h1')
+                .attr('class','title')
+                .text('Average APR by occupation and income level');
+            
             d3.select("#container") // this selects the div with id='container'
                 .append("h1")
                 .attr("class", "drawtitle")
@@ -144,52 +149,69 @@
                     .attr("y", 2)
                     .attr("width", 34)
                     .attr("height", 8)
+                    .attr("rx","3") // slightly rounded corners
+                    .attr("ry","3")
                     .style("fill", function(d) {
                         return colorScale(d);
                         });
-                
-                // draw legend text - again, could have chained this to the above
-                legend.append("text")
-                    .attr("x", width - 16)
-                    .attr("y", 8)
-                    //.attr("dy", ".35em")
-                    .attr("font-size","10px")
-                    .style("text-anchor", "start")
+                    
+                legend.append("rect")
+                    .attr("class", "legendBox2")
+                    .attr("x", width - 18)
+                    .attr("y", 0)
+                    .attr("width", 80)
+                    .attr("height", 10)
+                    .style('fill',"white");
+                    
+                legend.append('text')
+                    .attr('class','legendText')
+                    .attr('x', width -16)
+                    .attr('y', 8)
                     .text(function(d,i) {
                         return (i+1) + ":"+ d;
-                        });
-                
+                        })
+                    .attr("font-size","10px")
+                    .style("text-anchor", "start");
+               
                 legend.on("click", function(d) {
                     
                     d3.selectAll(".legend")
-                        .select('rect')
-                      .transition()
-                      .duration(500)
-                      .style("fill", function(d) {
-                        return colorScale(d);
-                        })
+                        .select("rect.legendBox2")
+                        .transition()
+                        .duration(500)
+                        .attr("x", width - 18);
+                        
                     
                     d3.selectAll(".legend")  
-                      .select('text')
-                      .transition()
-                      .duration(500)
-                      .style('fill','black')
-                      .attr("font-size","10px")
-                      .attr("x", width - 16)
-                        .attr("y", 8)
-                      ;
+                        .select('text')
+                        .transition()
+                        .duration(500)
+                        .style('fill','black')
+                        .attr("font-size","10px")
+                        .attr("x", width - 16)
+                        .attr("y", 8);
                
                     d3.select(this)
                         .select('text')
                       .transition()
                       .duration(500)
-                      .style("fill", "red")
                       .attr("font-size","20px")
                       .attr("x", width - 156)
                     .attr("y", 12);
                     
+                    d3.select(this)
+                        .select('.legendBox2')
+                      .transition()
+                      .duration(500)
+                      .attr("x", width - 156)
+                      .attr('y', -4)
+                      .attr('height','20')
+                      .attr('width',"300");
+                    
+                    // the 'd' selected is the occupation, which we pass to the update to show the line
                     update(d);
-                    debugger;
+             
+                    
                 });
             
             } // end of legendDraw funciton
@@ -201,6 +223,23 @@
                     }
                     ).sortKeys(d3.ascending)
                 .entries(data);
+           
+            
+            // created nestedIncome variable to average the APR across all occupations
+            // use this to create the average APR line and circles only.
+            var nestedIncome = d3.nest()
+                .key(function(d){
+                    return d.income;
+                    })
+                .rollup(function(leaves){
+                    var meanApr = d3.mean(leaves, function(d) {
+                    return d['apr'];
+                    });
+                    return {"meanApr": meanApr};
+                })   
+                .entries(data);
+                
+            debugger;
             
             // create linesArray which reshapes the data into easier format to use with linedraw function
             var linesArray = [];
@@ -274,7 +313,7 @@
             
             // Create function to draw a line for an occupation group
             function lineDraw(occupation_data) {
-                debugger;
+              
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
@@ -307,7 +346,7 @@
                 
             // define update function, to plot the data for a specific occupaiont
             function update(occupation) {
-                d3.select("h1")
+                d3.select("h1.drawtitle")
                     .text(occupation);
             
                 // first filter the main data to return only datapoints equal to that occupation
@@ -338,16 +377,11 @@
                 
                 var legends = legendDraw(uniqueOccupations);
                 
-                d3.select('h1')
+                d3.select('h1.drawtitle')
                     .text('Occupations');
             }
-        }, 50);
+        }, 10);
         
-        function highlightOccupation(occupation) {
-            
-            // change size of circles and line, and increase opacity
-            // use this for when hovering over the legend items
-        }
         
         };// END of function draw(data
             
