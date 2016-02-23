@@ -32,5 +32,7 @@ Task 4) Create a line chart of the average borrower APR for a profession (say "a
 AprMean <- summarySE(loans.df, measurevar = "BorrowerAPR",
                      groupvars = c("IncomeRange","OccGroup"))	
 
-Task 5) Write the data to CSV, so it can be used in d3.                     
+Task 5) Write the data to CSV, so it can be used in d3.
+
+Task 6) Use d3 to animate through the occupations, present the average, and allow the user to then select occupations to compare with the average                     
 
