@@ -174,14 +174,13 @@
                     .style("text-anchor", "start");
                
                 legend.on("click", function(d) {
-                    
                     d3.selectAll(".legend")
                         .select("rect.legendBox2")
                         .transition()
                         .duration(500)
-                        .attr("x", width - 18);
-                        
-                    
+                        .attr("x", width - 18)
+                        .attr('height', 10);
+                  
                     d3.selectAll(".legend")  
                         .select('text')
                         .transition()
@@ -430,7 +429,7 @@
                 d3.select('h1.drawtitle')
                     .text('Occupations');
             }
-        }, 10);
+        }, 100);
         
         
         };// END of function draw(data
