@@ -235,9 +235,43 @@
                     var meanApr = d3.mean(leaves, function(d) {
                     return d['apr'];
                     });
-                    return {"meanApr": meanApr};
+                    return meanApr;
                 })   
                 .entries(data);
+            debugger;
+            
+            var avgCircles = svg.selectAll('.averageCircle')
+                .data(nestedIncome)
+                    .enter()
+                .append('circle')
+                .attr('class','averageCircle')
+                .attr('cx', function(d){
+                    return xScale(d.key) + margin.left;
+                    })
+                .attr('cy', function(d){
+                    return yScale(d.values) + margin.top;
+                    })
+                .attr('r', 10)
+                .style('fill', "black")
+                .on("mouseover", function(d) {
+                    tooltip.transition()
+                    .duration(200)
+                    .style("opacity", 0.9);
+                    tooltip.html("Average" + "<br>"
+                                 + "Income Group: " + d.key + "<br>"
+                                 + "Mean APR: " + d3.format(".1%")(d.values))
+                    .style('font-size',"10pt")
+                    .style("left", (d3.event.pageX + 5) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px")
+                    .style("background-color","white");
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                });
+              
+                
                 
             debugger;
             
@@ -268,7 +302,7 @@
             function plot_points(occupation_data) {
                 // bind the data to the circles and enter them - using data, not nested.
                 
-                var circles = svg.selectAll('circle')
+                var circles = svg.selectAll('.plottedCircle')
                     .data(occupation_data, function(d){
                         return d['id'];
                         });
@@ -294,7 +328,7 @@
                             .duration(200)
                             .style("opacity", .9);
                             tooltip.html(d.OccGroup + "<br>"
-                                         + "Income Group" + d.income + "<br>"
+                                         + "Income Group: " + d.income + "<br>"
                                          + "Mean APR: " + d3.format(".1%")(d.apr))
                             .style('font-size',"10pt")
                             .style("left", (d3.event.pageX + 5) + "px")
