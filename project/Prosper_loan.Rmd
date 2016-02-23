@@ -114,6 +114,55 @@ levels(loans_simple$OccGroup)[1] <- "None provided"
 levels(loans_simple$OccGroup)
 ```
 
+## Amalgamate some of the occupations
+```{r, echo= FALSE}
+# create a new field called OccGroup
+loans.df$OccGroup <- loans.df$Occupation
+# run code to see summary of levels
+levels(loans.df$OccGroup)
+# start grouping levels, from bottom up
+levels(loans.df$OccGroup)[63:66] <- "Tradesman"
+levels(loans.df$OccGroup)[54:60] <- "Student"
+levels(loans.df$OccGroup)[49:50] <- "Sales"
+levels(loans.df$OccGroup)[49:50] <- "Sales"
+levels(loans.df$OccGroup) [39] <- "Pilot"
+levels(loans.df$OccGroup)[40] <- "Police Officer"
+levels(loans.df$OccGroup)[34:36] <- "Nursing"
+levels(loans.df$OccGroup)[32:33] <- "Military"
+levels(loans.df$OccGroup)[18:20] <- "Engineer"
+levels(loans.df$OccGroup)[3] <- "Admin Assistant"
+levels(loans.df$OccGroup)[2] <- "Accountant"
+levels(loans.df$OccGroup)[1] <- "None provided"
+```
+
+# first install statistics package - Rmisc, to allow to use summarySE
+```{r, echo= FALSE}
+install.packages("Rmisc")
+library(Rmisc)
+```  
+
+## Create a new dataframe with the means for BorrowerAPR grouped by IncomeRange and Occupation
+
+```{r, echo= FALSE}
+AprMean <- summarySE(loans.df, measurevar = "BorrowerAPR",
+                     groupvars = c("IncomeRange","OccGroup"))
+```
+
+```{r,echo=FALSE}
+AprMean2 <- summarySE(loans_simple, measurevar = "apr",
+                      groupvars = c("income","OccGroup"))
+```
+
+# Remove all rows where the number of entries < limit (say 5). This makes the average more meaningful and less volatile at the expense of data.
+```{r, echo= FALSE}
+AprMeanReduced <- subset(AprMean, N>=10)
+```
+
+```{r, echo= FALSE}
+AprMeanReduced2 <- subset(AprMean2, N>=8)
+```
+
+
 ```{r,echo=FALSE}
 # tidy up loans_simple by removing occupation field
 loans_simple$occupation <- NULL
@@ -524,26 +573,7 @@ ggplot(aes(x = Occupation),
   theme_economist()
 ```
 
-## Amalgamate some of the occupations
-```{r, echo= FALSE}
-# create a new field called OccGroup
-loans.df$OccGroup <- loans.df$Occupation
-# run code to see summary of levels
-levels(loans.df$OccGroup)
-# start grouping levels, from bottom up
-levels(loans.df$OccGroup)[63:66] <- "Tradesman"
-levels(loans.df$OccGroup)[54:60] <- "Student"
-levels(loans.df$OccGroup)[49:50] <- "Sales"
-levels(loans.df$OccGroup)[49:50] <- "Sales"
-levels(loans.df$OccGroup) [39] <- "Pilot"
-levels(loans.df$OccGroup)[40] <- "Police Officer"
-levels(loans.df$OccGroup)[34:36] <- "Nursing"
-levels(loans.df$OccGroup)[32:33] <- "Military"
-levels(loans.df$OccGroup)[18:20] <- "Engineer"
-levels(loans.df$OccGroup)[3] <- "Admin Assistant"
-levels(loans.df$OccGroup)[2] <- "Accountant"
-levels(loans.df$OccGroup)[1] <- "None provided"
-```
+
 
 ## Now Look at Bar-chart for borrower rate by Occupation, for ALL incomes.
 ```{r, echo= FALSE}
@@ -690,32 +720,7 @@ ggplot(aes(x = OccGroupAsc,
 
 ## Create a linechart of the average BorrowerAPR for a specific profession, say "analsyt", across the different IncomeRanges
 
-# first install statistics package - Rmisc, to allow to use summarySE
-```{r, echo= FALSE}
-install.packages("Rmisc")
-library(Rmisc)
-```  
 
-## Create a new dataframe with the means for BorrowerAPR grouped by IncomeRange and Occupation
-
-```{r, echo= FALSE}
-AprMean <- summarySE(loans.df, measurevar = "BorrowerAPR",
-                     groupvars = c("IncomeRange","OccGroup"))
-```
-
-```{r,echo=FALSE}
-AprMean2 <- summarySE(loans_simple, measurevar = "apr",
-                      groupvars = c("income","OccGroup"))
-```
-
-# Remove all rows where the number of entries < limit (say 5). This makes the average more meaningful and less volatile at the expense of data.
-```{r, echo= FALSE}
-AprMeanReduced <- subset(AprMean, N>=10)
-```
-
-```{r, echo= FALSE}
-AprMeanReduced2 <- subset(AprMean2, N>=8)
-```
 
 ## Create line graph of mean BorrowerAPR against IncomeRange - Note the group has been forced together by 'group = 1'
 ```{r, echo= FALSE}
