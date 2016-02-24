@@ -172,12 +172,17 @@ write.csv(loans_simple, file = "loans_simple.csv")
 ```
 
 ```{r, echo=FALSE}
+# add an index column - will use this to uniquely identify data.
 AprMeanReduced2$id = seq.int(nrow(AprMeanReduced2))
 ```
 
+```{r,echo=FALSE}
+# re-arrange the columns and drop the sd, se, and ci data (not doing boxplots)
+AprMeanReduced2 <- AprMeanReduced2[,c("id","OccGroup","income","apr","N")] 
+```
 
 ```{r, echo= FALSE}
-write.csv(AprMeanReduced2, file = "loans_clean.csv")
+write.csv(AprMeanReduced2, file = "../loans_clean.csv")
 ```
 
 
