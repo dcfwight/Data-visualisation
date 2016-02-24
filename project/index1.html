@@ -121,8 +121,16 @@
                 .scale(yScale)
                 .tickSize(5)
                 .tickFormat(formatAsPercentage)
-                .orient("left") // this specifies the orientation of labels to the axis
-                .innerTickSize(legendBuffer-width);
+                .orient("left"); // this specifies the orientation of labels to the axis
+                 
+            // function for creating the y grid lines
+            function make_y_grids() {
+                return d3.svg.axis()
+                    .scale(yScale)
+                    .orient("left")
+                    .ticks(7);
+                    }
+
             
             // Add the y-axis in it's own 'g' group.
             myChart.append("g")
@@ -136,6 +144,15 @@
                     .style('text-anchor','end')
                     .style('fill','black')
                     .text('Average Borrower APR');           
+            
+            // Draw the y Grid lines
+            myChart.append("g")			
+                .attr("class", "grid")
+                .call(make_y_grids()
+                .tickSize(legendBuffer-width, 0, 0)
+                .tickFormat("")
+            );
+            
             
             // create a scale for the radius of the circles
                 var rScale = d3.scale.sqrt()
@@ -358,7 +375,7 @@
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
                     .y(function(d) { return yScale(d.apr) +margin.top; })
-                    .interpolate("linear");
+                    .interpolate("bundle");
                 
                 // create the linePath for all the individual occupations
                 var linePath = d3.select('svg')
