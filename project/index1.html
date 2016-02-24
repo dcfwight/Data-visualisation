@@ -12,9 +12,16 @@
         // Set the margins for use with the svgs
         // NB the dimensions of the bl.ocks window is 962 * 502
         var margin = {top: 20, right: 20, bottom: 30, left: 40},
-            legendBuffer = 150,
             width = 962 - margin.left - margin.right,
             height = 502 - margin.top - margin.bottom;  
+        
+        // set the dimensions for the buttons - this influence the buttonBuffer
+        var buttonWidth = 100,
+                buttonHeight = 19,
+                buttonSpace = 1,
+                buttonX0 = (width - (2* buttonWidth) - 2),
+                buttonY0 = 2
+                buttonBuffer = 2* buttonWidth;
             
         // Create percentage format variable for use in axes
         var formatAsPercentage = d3.format("1%");
@@ -55,7 +62,7 @@
             // draw the Occupation text on the chart
             myChart.append('text')
                 .attr("class", "occupTitle")
-                .attr('x', (width-legendBuffer)/2)
+                .attr('x', (width-buttonBuffer)/2)
                 .attr('y', 45)
                 .style('text-anchor','middle')
                 .text("Occupation");
@@ -82,7 +89,7 @@
             // Change the padding if the data is too close to edges  
             var xScale = d3.scale.ordinal()
                 .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
-                .rangePoints([0,width - legendBuffer],1);
+                .rangePoints([0,width - buttonBuffer],1);
                 
             // create the x-axis object (note - not added yet, just defined the variable)
             var xAxis = d3.svg.axis()
@@ -96,7 +103,7 @@
                     .attr("class","x axis")
                     .call(xAxis)
                 .append('text')
-                    .attr("x", width - legendBuffer)
+                    .attr("x", width - buttonBuffer)
                     .attr("y", -6)
                     .style("text-anchor","end")
                     .text("Income Bracket");    
@@ -141,54 +148,65 @@
             myChart.append("g")			
                 .attr("class", "grid")
                 .call(make_y_grids()
-                .tickSize(legendBuffer-width, 0, 0)
+                .tickSize(buttonBuffer-width, 0, 0)
                 .tickFormat("")
             );
             
             
             // create a scale for the radius of the circles
-                var rScale = d3.scale.sqrt()
-                    .domain([0,d3.max(data, function(d){
-                        return d.N;
-                        })])
-                    .range([1,40]);
+            var rScale = d3.scale.sqrt()
+                .domain([0,d3.max(data, function(d){
+                    return d.N;
+                    })])
+                .range([1,40]);
             
             // make buttons for the occupations
             
             // first make a container for the group of buttons
             
             var allButtons= svg.append("g")
-                    .attr("id","allButtons");
+                .attr("id","allButtons");
                     
             // creat a group for each button (rect and text)
             var buttonGroups= allButtons.selectAll("g.button")
-                        .data(uniqueOccupations)
-                            .enter()
-                        .append("g")
-                        .attr("class","button")
-                        .style("cursor","pointer");
+                .data(uniqueOccupations)
+                    .enter()
+                .append("g")
+                .attr("class","button")
+                .style("cursor","pointer");
             
-            var buttonWidth = 34,
-                buttonHeight = 8,
-                buttonSpace = 1,
-                buttonX0 = (width - buttonWidth - 2),
-                buttonY0 = 2;
-        
             buttonGroups.append("rect")
                 .attr("class","buttonRect")
                 .attr("width",buttonWidth)
                 .attr("height",buttonHeight)
-                .attr("x", buttonX0)
+                .attr("x", function(d,i){
+                    return (buttonWidth+5) * Math.floor(i/25) + buttonX0;
+                    } )
                 .attr("y",function(d,i){
-                    return buttonY0 +(buttonHeight + buttonSpace)*i;
+                    return buttonY0 +(buttonHeight + buttonSpace)*(i%25);
                     })
                 .attr("rx",5) 
                 .attr("ry",5)
-                .attr("fill","red");
+                .attr("fill","grey");
+            
+            //adding text to each button group, centered within the button rect
+            buttonGroups.append("text")
+                .attr("class","buttonText")
+                .attr("x", function(d,i){
+                    return (buttonWidth+5) * Math.floor(i/25) + buttonX0 +buttonWidth/2;
+                    })
+                .attr("y", function(d,i){
+                    return buttonY0 + (buttonHeight + buttonSpace)*(i%25) + buttonHeight/2;   
+                    })
+                .attr("text-anchor","middle")
+                .attr("fill","white")
+                .text(function(d) {
+                    return d;
+                    }); 
             
             debugger;
-            
-            // draw legend
+            /* 
+            // draw legend - this code works, just switching to new buttons
             function legendDraw(occupations) { 
                 var legend = d3.select('.svg')
                     .selectAll(".legend")
@@ -270,7 +288,7 @@
                 });
             
             } // end of legendDraw funciton
-            
+            */
             // created a nested function, grouping the data by Occupation group.
             var nested = d3.nest()
                 .key(function(d){
@@ -403,7 +421,7 @@
                                 .attr('cy', yScale(d.apr) + margin.top)
                                 .attr('r', rScale(d.N))
                                 .style('fill',function(d){
-                                    return colorScale(d.OccGroup);
+                                    return colorScale(parent.OccGroup);
                                     });
                             })
                         .on("mouseout", function(d) {
