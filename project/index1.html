@@ -153,6 +153,41 @@
                         })])
                     .range([1,40]);
             
+            // make buttons for the occupations
+            
+            // first make a container for the group of buttons
+            
+            var allButtons= svg.append("g")
+                    .attr("id","allButtons");
+                    
+            // creat a group for each button (rect and text)
+            var buttonGroups= allButtons.selectAll("g.button")
+                        .data(uniqueOccupations)
+                            .enter()
+                        .append("g")
+                        .attr("class","button")
+                        .style("cursor","pointer");
+            
+            var buttonWidth = 34,
+                buttonHeight = 8,
+                buttonSpace = 1,
+                buttonX0 = (width - buttonWidth - 2),
+                buttonY0 = 2;
+        
+            buttonGroups.append("rect")
+                .attr("class","buttonRect")
+                .attr("width",buttonWidth)
+                .attr("height",buttonHeight)
+                .attr("x", buttonX0)
+                .attr("y",function(d,i){
+                    return buttonY0 +(buttonHeight + buttonSpace)*i;
+                    })
+                .attr("rx",5) 
+                .attr("ry",5)
+                .attr("fill","red");
+            
+            debugger;
+            
             // draw legend
             function legendDraw(occupations) { 
                 var legend = d3.select('.svg')
