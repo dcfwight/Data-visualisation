@@ -1,0 +1,450 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <title>Prosper Loan Analysis</title>
+    <meta charset="utf-8">
+    <script src="d3.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    
+    <script type="text/javascript">
+        
+        // Set the margins for use with the svgs
+        var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            legendBuffer = 150,
+            width = 1200 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;  
+        
+        var radius = 4,
+            fillColor = "blue",
+            multiplier = 1.75;
+            
+        var buckets = ["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"];
+               
+        // Create percentage format variable for use in axes
+        var formatAsPercentage = d3.format("1%");
+        
+        // Create colors (52) for use with the 52 different occupations - might change
+        var colors = ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9",
+                      "#bc80bd","#ccebc5","#ffed6f","#66c2a5","#fc8d62","#8da0cb","#e78ac3","#a6d854","#ffd92f",
+                      "#e5c494","#b3b3b3","#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00","#ffff33","#a65628",
+                      "#f781bf","#c9d9d9","#b7fcfd","#d545f9","#ccece6","#99d8c9","#66c2a4","#41ae76","#238b45",
+                      "#006d2c","#11441b","#bba7fb","#ecedb0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a",
+                      "#016c59","#01cd36","#f137fb","#e267f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
+        
+        var duration = 1000 // duration time for transitions
+        
+        
+        function draw(data) {
+            d3.select("#container")
+                .append('h1')
+                .attr('class','title')
+                .text('Average APR by occupation and income level');
+            
+            d3.select("#container") // this selects the div with id='container'
+                .append("h1")
+                .attr("class", "drawtitle")
+                .text("Occupation");
+        
+            // Create svg variable to use with D3 code 
+            var svg = d3.select("#container")
+                .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .attr("class", "svg");
+            
+            // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
+            // equivalent to 'div' in HTML
+            var myChart = svg.append("g")
+                .attr("transform","translate(" + margin.left +"," + margin.top +")")
+                .attr("width", width)
+                .attr("class", "chart");
+            
+            // Create a set of unique occupations called 'occupations' by adding to it.
+            var occupations = d3.set();
+            data.forEach(function(d){
+                occupations.add(d["OccGroup"])
+                           });
+            
+            // then create an array of just the values in this set - makes the rest of the code much easier
+            var uniqueOccupations = occupations.values();
+            // sort them alphabetically
+            uniqueOccupations.sort(d3.ascending);
+
+            // the occupations are categorical, so we need an ordinal scale for the colors.
+            var colorScale = d3.scale.ordinal()
+                .domain(d3.extent(data, function(d){
+                    return d.OccGroup;
+                    }))
+                .range(colors);
+      
+            // the x axis data is categorical, so we need an ordinal scale.
+            // Change the padding if the data is too close to edges  
+            var xScale = d3.scale.ordinal()
+                .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
+                .rangePoints([0,width - legendBuffer],1);
+                
+            // create the x-axis object (note - not added yet, just defined the variable)
+            var xAxis = d3.svg.axis()
+                .scale(xScale)
+                .tickSize(5)
+                .orient("bottom");   // this specifies the orientation of labels relative to the axis   
+                
+            // Add the x-axis in it's own 'g' group.    
+            myChart.append("g")
+                    .attr("transform","translate(0," + height + ")")
+                    .attr("class","x axis")
+                    .call(xAxis)
+                .append('text')
+                    .attr("x", width - legendBuffer)
+                    .attr("y", -6)
+                    .style("text-anchor","end")
+                    .text("Income Bracket");    
+            
+            // construct the y axis scale. This is linear as it is a range of apr values.
+            var yScale = d3.scale.linear()
+                .domain([0,d3.max(data, function(d){
+                    return d.apr;
+                    })])
+                .range([height,0])
+                .nice();
+                
+            // create the y-axis object (note - not added yet, just defined)
+            var yAxis = d3.svg.axis()
+                .scale(yScale)
+                .tickSize(5)
+                .tickFormat(formatAsPercentage)
+                .orient("left") // this specifies the orientation of labels to the axis
+                .innerTickSize(legendBuffer-width);
+            
+            // Add the y-axis in it's own 'g' group.
+            myChart.append("g")
+                    .attr("class","y axis")
+                    .call(yAxis)
+                .append('text')
+                    .attr('transform', "rotate(-90)")
+                    .attr('y',  6)
+                    .attr('x', -4)
+                    .attr('dy', ".71em")
+                    .style('text-anchor','end')
+                    .style('fill','black')
+                    .text('Average Borrower APR');           
+            // draw legend
+            
+            function legendDraw(occupations) { 
+                var legend = d3.select('.svg')
+                    .selectAll(".legend")
+                    .data(occupations)
+                        .enter()
+                    .append("g")
+                        .attr("class", "legend")
+                        .attr("transform", function(d, i) {
+                            return "translate(0," + i * 10 +")";
+                            })
+                
+                // draw legend colored rectangles - note this could have been chained to the above
+                legend.append("rect")
+                    .attr("class", "legendBox")
+                    .attr("x", width - 58)
+                    .attr("y", 2)
+                    .attr("width", 34)
+                    .attr("height", 8)
+                    .attr("rx","3") // slightly rounded corners
+                    .attr("ry","3")
+                    .style("fill", function(d) {
+                        return colorScale(d);
+                        });
+                    
+                legend.append("rect")
+                    .attr("class", "legendBox2")
+                    .attr("x", width - 18)
+                    .attr("y", 0)
+                    .attr("width", 80)
+                    .attr("height", 10)
+                    .style('fill',"white");
+                    
+                legend.append('text')
+                    .attr('class','legendText')
+                    .attr('x', width -16)
+                    .attr('y', 8)
+                    .text(function(d,i) {
+                        return (i+1) + ":"+ d;
+                        })
+                    .attr("font-size","10px")
+                    .style("text-anchor", "start");
+               
+                legend.on("click", function(d) {
+                    d3.selectAll(".legend")
+                        .select("rect.legendBox2")
+                        .transition()
+                        .duration(500)
+                        .attr("x", width - 18)
+                        .attr('height', 10);
+                  
+                    d3.selectAll(".legend")  
+                        .select('text')
+                        .transition()
+                        .duration(500)
+                        .style('fill','black')
+                        .attr("font-size","10px")
+                        .attr("x", width - 16)
+                        .attr("y", 8);
+               
+                    d3.select(this)
+                        .select('text')
+                      .transition()
+                      .duration(500)
+                      .attr("font-size","20px")
+                      .attr("x", width - 156)
+                    .attr("y", 12);
+                    
+                    d3.select(this)
+                        .select('.legendBox2')
+                      .transition()
+                      .duration(500)
+                      .attr("x", width - 156)
+                      .attr('y', -4)
+                      .attr('height','20')
+                      .attr('width',"300");
+                    
+                    // the 'd' selected is the occupation, which we pass to the update to show the line
+                    update(d);
+             
+                    
+                });
+            
+            } // end of legendDraw funciton
+            
+            // created a nested function, grouping the data by Occupation group.
+            var nested = d3.nest()
+                .key(function(d){
+                    return d.OccGroup;
+                    }
+                    ).sortKeys(d3.ascending)
+                .entries(data);
+           
+            
+            // created nestedIncome variable to average the APR across all occupations
+            // use this to create the average APR line and circles only.
+            var nestedIncome = d3.nest()
+                .key(function(d){
+                    return d.income;
+                    })
+                .rollup(function(leaves){
+                    var meanApr = d3.mean(leaves, function(d) {
+                    return d['apr'];
+                    });
+                    return meanApr;
+                })   
+                .entries(data);
+            debugger;
+            // create the circles for the average APR
+            var avgCircles = svg.selectAll('.averageCircle')
+                .data(nestedIncome)
+                    .enter()
+                .append('circle')
+                .attr('class','averageCircle')
+                .attr('cx', function(d){
+                    return xScale(d.key) + margin.left;
+                    })
+                .attr('cy', function(d){
+                    return yScale(d.values) + margin.top;
+                    })
+                .attr('r', 10)
+                .style('fill', "black")
+                .on("mouseover", function(d) {
+                    tooltip.transition()
+                    .duration(200)
+                    .style("opacity", 0.9);
+                    tooltip.html("Average" + "<br>"
+                                 + "Income Group: " + d.key + "<br>"
+                                 + "Mean APR: " + d3.format(".1%")(d.values))
+                    .style('font-size',"10pt")
+                    .style("left", (d3.event.pageX + 5) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px")
+                    .style("background-color","white");
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+                });
+            
+            // create linesArray which reshapes the data into easier format to use with linedraw function
+            var linesArray = [];
+            for (i in nested){
+                pathInfo = [];
+                for (j in nested[i].values){
+                    pathInfo.push({'id': nested[i].values[j].id,
+                                    'apr': nested[i].values[j].apr,
+                                    'income': nested[i].values[j].income});
+                    }
+               
+                linesArray.push({'key': nested[i].key,
+                                'values': pathInfo});
+            }
+
+            
+            // add the tooltip area to the div element with id 'container'
+            var tooltip = d3.select("#container")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("width", "180px")
+                .style('height',"40px")
+                .style("opacity", 0);
+            
+            // create function to plot the circles - note, this is within the draw function    
+            function plot_points(occupation_data) {
+                // bind the data to the circles and enter them - using data, not nested.
+                
+                var circles = svg.selectAll('.plottedCircle')
+                    .data(occupation_data, function(d){
+                        return d['id'];
+                        });
+                    
+                circles.exit()
+                        .remove();
+                    
+                circles.enter()
+                    .append('circle')
+                        .attr('class','plottedCircle')
+                        .attr('cx', function(d){
+                            return xScale(d.income) + margin.left;
+                            })
+                        .attr('cy', function(d){
+                            return yScale(d.apr) + margin.top;
+                            })
+                        .attr('r', radius)
+                        .style('fill', function(d){
+                            return colorScale(d.OccGroup);
+                            })
+                        .on("mouseover", function(d) {
+                            tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                            tooltip.html(d.OccGroup + "<br>"
+                                         + "Income Group: " + d.income + "<br>"
+                                         + "Mean APR: " + d3.format(".1%")(d.apr))
+                            .style('font-size',"10pt")
+                            .style("left", (d3.event.pageX + 5) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px")
+                            .style("background-color","white");
+                            })
+                        .on("mouseout", function(d) {
+                            tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                        });
+                
+            }// END of function plot points(data)    
+            
+            // Create function to draw a line for an occupation group
+            function lineDraw(occupation_data) {
+                
+                // Create variable to define pixel points of the line
+                var line = d3.svg.line()
+                    .x(function(d) { return xScale(d.income) + margin.left; })
+                    .y(function(d) { return yScale(d.apr) +margin.top; })
+                    .interpolate("linear");
+                
+                // create the linePath for all the individual occupations
+                var linePath = d3.select('svg')
+                    .selectAll('.occupLine')
+                    .data(occupation_data, function(d){
+                        return d.key;
+                        });
+                    
+                linePath.enter()
+                    .append('g')
+                        .attr('class','occupLine')
+                        .style('stroke', (function(d){
+                            return colorScale(d.key);
+                            }));
+                
+                linePath.exit().remove();
+                
+                linePath.append('path')
+                        .attr('class','line')
+                        .attr('d', function(d){
+                            return line(d.values);
+                            });
+                        
+                linePath.exit().remove();
+                 }; // End of function lineDraw(occupation)
+            
+            function lineDrawAverage(averagedata) {
+                 // now create the linePath for the average - this stays on the screen.
+               
+                // create slightly different line format to deal with the average data 
+                var averageLine =  d3.svg.line()
+                    .x(function(d) { return xScale(d.key) + margin.left; })
+                    .y(function(d) { return yScale(d.values) +margin.top; })
+                    .interpolate("linear");       
+                
+                var averageLinePath = d3.select('svg')
+                    .append('path')
+                    .attr('d', averageLine(averagedata))
+                    .attr('stroke','black')
+                    .attr('stroke-width',4)
+                    .attr('fill','none');
+      
+            } // end of lineDrawAverage function
+                
+            // define update function, to plot the data for a specific occupation
+            function update(occupation) {
+                d3.select("h1.drawtitle")
+                    .text(occupation);
+            
+                // first filter the main data to return only datapoints equal to that occupation
+                occup_points_data = data.filter(function(d){
+                    return d.OccGroup === occupation;
+                    });
+                // also filter the linesArray for datapoints equal to that occupation
+                occup_line_data = linesArray.filter(function(d){
+                    return d.key === occupation;
+                    });
+                plot_points(occup_points_data); // pass those points to the plot_points function
+                
+                lineDraw(occup_line_data); // pass those points to the lineDraw function
+            }
+        
+        // first draw the line for the averages
+        lineDrawAverage(nestedIncome);
+    
+        // to loop through all occupations, drawing circles and points:
+        occup_idx = 0
+        
+        var occupation_interval = setInterval(function(){
+            update(uniqueOccupations[occup_idx]);
+            occup_idx++;
+            
+            if (occup_idx >= uniqueOccupations.length) {
+                clearInterval(occupation_interval);
+                
+                var circles = plot_points(data);
+                var lines = lineDraw(linesArray);
+                
+                var legends = legendDraw(uniqueOccupations);
+                
+                d3.select('h1.drawtitle')
+                    .text('Occupations');
+            }
+        }, 100);
+        
+        
+        };// END of function draw(data
+        
+          
+      </script>
+</head>
+<body>
+    <div id="container">
+    </div>
+    
+    <script type="text/javascript">
+    //Use D3 to load the CSV file and pass the contents of it to the draw function
+    d3.csv("data/loans_clean.csv", draw);
+    
+    </script>
+</body>
+</html>
