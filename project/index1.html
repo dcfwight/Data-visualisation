@@ -162,6 +162,10 @@
             
             // make buttons for the occupations
             
+            // set the colors for interaction 
+            var defaultColor= "#7777BB";
+            var hoverColor= "#0000ff";
+            var pressedColor= "#000077";
             // first make a container for the group of buttons
             
             var allButtons= svg.append("g")
@@ -173,10 +177,28 @@
                     .enter()
                 .append("g")
                 .attr("class","button")
-                .style("cursor","pointer");
+                .style("cursor","pointer")
+                .on("click",function(d) {
+                                updateButtonColors(d3.select(this), d3.select(this.parentNode))
+                })
+                .on("mouseover", function() {
+                    if (d3.select(this).select("rect").attr("fill") != pressedColor) {
+                        d3.select(this)
+                            .select("rect")
+                            .attr("fill",hoverColor);
+                    }
+                })
+                .on("mouseout", function() {
+                    if (d3.select(this).select("rect").attr("fill") != pressedColor) {
+                        d3.select(this)
+                            .select("rect")
+                            .attr("fill",defaultColor);
+                    }
+                });
             
             buttonGroups.append("rect")
                 .attr("class","buttonRect")
+                .attr('fill',defaultColor)
                 .attr("width",buttonWidth)
                 .attr("height",buttonHeight)
                 .attr("x", function(d,i){
@@ -189,6 +211,9 @@
             //adding text to each button group, centered within the button rect
             buttonGroups.append("text")
                 .attr("class","buttonText")
+                .attr('font-family','sans-serif')
+                .attr('fill','white')
+                .attr('font-size',10)
                 .attr("x", function(d,i){
                     return (buttonWidth+5) * Math.floor(i/25) + buttonX0 +10 ;
                     })
@@ -199,6 +224,16 @@
                 .text(function(d) {
                     return d;
                     }); 
+           
+           
+            
+            function updateButtonColors(button, parent) {
+                parent.selectAll("rect")
+                    .attr("fill",defaultColor);
+
+                button.select("rect")
+                    .attr("fill",pressedColor);
+            }
             
             debugger;
             /* 
@@ -520,7 +555,7 @@
                 var circles = plot_points(data);
                 var lines = lineDraw(linesArray);
                 
-                var legends = legendDraw(uniqueOccupations);
+                //var legends = legendDraw(uniqueOccupations);
                 
                 d3.select('.occupTitle')
                     .text('Occupations');
