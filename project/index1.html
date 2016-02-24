@@ -184,22 +184,18 @@
                     } )
                 .attr("y",function(d,i){
                     return buttonY0 +(buttonHeight + buttonSpace)*(i%25);
-                    })
-                .attr("rx",5) 
-                .attr("ry",5)
-                .attr("fill","grey");
+                    });
             
             //adding text to each button group, centered within the button rect
             buttonGroups.append("text")
                 .attr("class","buttonText")
                 .attr("x", function(d,i){
-                    return (buttonWidth+5) * Math.floor(i/25) + buttonX0 +buttonWidth/2;
+                    return (buttonWidth+5) * Math.floor(i/25) + buttonX0 +10 ;
                     })
                 .attr("y", function(d,i){
                     return buttonY0 + (buttonHeight + buttonSpace)*(i%25) + buttonHeight/2;   
                     })
-                .attr("text-anchor","middle")
-                .attr("fill","white")
+                //.attr("text-anchor","middle")
                 .text(function(d) {
                     return d;
                     }); 
