@@ -5,15 +5,16 @@
     <title>Prosper Loan Analysis</title>
     <meta charset="utf-8">
     <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
     
     <script type="text/javascript">
         
         // Set the margins for use with the svgs
+        // NB the dimensions of the bl.ocks window is 962 * 502
         var margin = {top: 20, right: 20, bottom: 30, left: 40},
             legendBuffer = 150,
-            width = 800 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;  
+            width = 962 - margin.left - margin.right,
+            height = 502 - margin.top - margin.bottom;  
         
         var radius = 4,
             fillColor = "blue",
@@ -36,29 +37,38 @@
         
         
         function draw(data) {
+            /*
+            //take this out to save space on bl.ocks - duplicated with title
+            // put it back in if using in normal html
             d3.select("#container")
                 .append('h1')
                 .attr('class','title')
                 .text('Average APR by occupation and income level');
+            */
             
-            d3.select("#container") // this selects the div with id='container'
-                .append("h1")
-                .attr("class", "drawtitle")
-                .text("Occupation");
-        
             // Create svg variable to use with D3 code 
             var svg = d3.select("#container")
                 .append("svg")
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                     .attr("class", "svg");
-            
+
             // Create myChart variable within the svg item to house the chart. 'g' is just an arbitrary containing child element in SVG
             // equivalent to 'div' in HTML
             var myChart = svg.append("g")
                 .attr("transform","translate(" + margin.left +"," + margin.top +")")
                 .attr("width", width)
+                .attr('height', height)
                 .attr("class", "chart");
+            
+            // draw the Occupation text on the chart
+            myChart.append('text')
+                .attr("class", "drawtitle")
+                .attr('x', (width-legendBuffer)/2)
+                .attr('y', 45)
+                .attr("font-size","30px")
+                .style('text-anchor','middle')
+                .text("Occupation");
             
             // Create a set of unique occupations called 'occupations' by adding to it.
             var occupations = d3.set();
@@ -208,9 +218,7 @@
                       .attr('width',"300");
                     
                     // the 'd' selected is the occupation, which we pass to the update to show the line
-                    update(d);
-             
-                    
+                    update(d);   
                 });
             
             } // end of legendDraw funciton
@@ -223,7 +231,6 @@
                     ).sortKeys(d3.ascending)
                 .entries(data);
            
-            
             // created nestedIncome variable to average the APR across all occupations
             // use this to create the average APR line and circles only.
             var nestedIncome = d3.nest()
@@ -392,7 +399,7 @@
                 
             // define update function, to plot the data for a specific occupation
             function update(occupation) {
-                d3.select("h1.drawtitle")
+                d3.select(".drawtitle")
                     .text(occupation);
             
                 // first filter the main data to return only datapoints equal to that occupation
@@ -429,7 +436,7 @@
                 d3.select('h1.drawtitle')
                     .text('Occupations');
             }
-        }, 100);
+        }, 10);
         
         
         };// END of function draw(data
@@ -443,7 +450,7 @@
     
     <script type="text/javascript">
     //Use D3 to load the CSV file and pass the contents of it to the draw function
-    d3.csv("data/loans_clean.csv", draw);
+    d3.csv("loans_clean.csv", draw);
     
     </script>
 </body>
