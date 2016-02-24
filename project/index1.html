@@ -142,7 +142,7 @@
                     .domain([0,d3.max(data, function(d){
                         return d.N;
                         })])
-                    .range([1,50]);
+                    .range([1,40]);
             
             // draw legend
             function legendDraw(occupations) { 
@@ -301,12 +301,11 @@
                 .append("div")
                 .attr("class", "tooltip")
                 .style("width", "180px")
-                .style('height',"40px")
+                .style('height',"60px")
                 .style("opacity", 0);
             
             // create function to plot the circles - note, this is within the draw function    
             function plot_points(occupation_data) {
-                
                 // bind the data to the circles and enter them - using data, not nested.
                 var circles = svg.selectAll('.plottedCircle')
                     .data(occupation_data, function(d){
@@ -337,7 +336,8 @@
                             .style("opacity", .9);
                             tooltip.html(d.OccGroup + "<br>"
                                          + "Income Group: " + d.income + "<br>"
-                                         + "Mean APR: " + d3.format(".1%")(d.apr))
+                                         + "Mean APR: " + d3.format(".1%")(d.apr) +"<br>"
+                                         + "Sample size: " + d3.format("0,000")(d.N))
                             .style('font-size',"10pt")
                             .style("left", (d3.event.pageX + 5) + "px")
                             .style("top", (d3.event.pageY - 28) + "px")
@@ -353,7 +353,7 @@
             
             // Create function to draw a line for an occupation group
             function lineDraw(occupation_data) {
-                
+
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
