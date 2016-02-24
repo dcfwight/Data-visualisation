@@ -33,9 +33,6 @@
                       "#006d2c","#11441b","#bba7fb","#ecedb0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a",
                       "#016c59","#01cd36","#f137fb","#e267f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
         
-        var duration = 1000 // duration time for transitions
-        
-        
         function draw(data) {
             /*
             //take this out to save space on bl.ocks - duplicated with title
@@ -139,8 +136,15 @@
                     .style('text-anchor','end')
                     .style('fill','black')
                     .text('Average Borrower APR');           
-            // draw legend
             
+            // create a scale for the radius of the circles
+                var rScale = d3.scale.linear()
+                    .domain([0,d3.max(data, function(d){
+                        return d.N;
+                        })])
+                    .range([5,50]);
+            
+            // draw legend
             function legendDraw(occupations) { 
                 var legend = d3.select('.svg')
                     .selectAll(".legend")
@@ -244,7 +248,7 @@
                     return meanApr;
                 })   
                 .entries(data);
-            debugger;
+
             // create the circles for the average APR
             var avgCircles = svg.selectAll('.averageCircle')
                 .data(nestedIncome)
@@ -302,8 +306,9 @@
             
             // create function to plot the circles - note, this is within the draw function    
             function plot_points(occupation_data) {
-                // bind the data to the circles and enter them - using data, not nested.
                 
+                debugger;
+                // bind the data to the circles and enter them - using data, not nested.
                 var circles = svg.selectAll('.plottedCircle')
                     .data(occupation_data, function(d){
                         return d['id'];
@@ -321,7 +326,9 @@
                         .attr('cy', function(d){
                             return yScale(d.apr) + margin.top;
                             })
-                        .attr('r', radius)
+                        .attr('r', function(d){
+                            return rScale(d.N);
+                            })
                         .style('fill', function(d){
                             return colorScale(d.OccGroup);
                             })
@@ -450,7 +457,11 @@
     
     <script type="text/javascript">
     //Use D3 to load the CSV file and pass the contents of it to the draw function
-    d3.csv("loans_clean.csv", draw);
+    d3.csv("loans_clean.csv", function(d) {
+        d['N'] = +d['N'];
+        return d},
+           draw);
+    
     
     </script>
 </body>
