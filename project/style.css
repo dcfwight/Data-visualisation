@@ -8,7 +8,6 @@ h1 {
     }
 
 circle {
-        opacity: 0.6;
         stroke: none;
       }
 
@@ -28,9 +27,23 @@ div {
     font-size: 12px;
 }
 
+.grid .tick {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+}
+.grid path {
+          stroke-width: 0;
+}
+
 .line {
   fill: none;
   stroke-width: 1.5px;
+}
+
+.occupTitle{
+    font-size: 30px;
+    text-anchor: middle;
 }
 
 .tooltip {
