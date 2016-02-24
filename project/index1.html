@@ -4,7 +4,7 @@
 <head>
     <title>Prosper Loan Analysis</title>
     <meta charset="utf-8">
-    <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="d3.min.js" charset="utf-8"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     
     <script type="text/javascript">
@@ -15,13 +15,7 @@
             legendBuffer = 150,
             width = 962 - margin.left - margin.right,
             height = 502 - margin.top - margin.bottom;  
-        
-        var radius = 4,
-            fillColor = "blue",
-            multiplier = 1.75;
             
-        var buckets = ["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"];
-               
         // Create percentage format variable for use in axes
         var formatAsPercentage = d3.format("1%");
         
@@ -60,10 +54,9 @@
             
             // draw the Occupation text on the chart
             myChart.append('text')
-                .attr("class", "drawtitle")
+                .attr("class", "occupTitle")
                 .attr('x', (width-legendBuffer)/2)
                 .attr('y', 45)
-                .attr("font-size","30px")
                 .style('text-anchor','middle')
                 .text("Occupation");
             
@@ -131,7 +124,6 @@
                     .ticks(7);
                     }
 
-            
             // Add the y-axis in it's own 'g' group.
             myChart.append("g")
                     .attr("class","y axis")
@@ -278,8 +270,9 @@
                 .attr('cy', function(d){
                     return yScale(d.values) + margin.top;
                     })
-                .attr('r', 10)
+                .attr('r', 5)
                 .style('fill', "black")
+                .style('opacity', 0.5)
                 .on("mouseover", function(d) {
                     tooltip.transition()
                     .duration(200)
@@ -314,13 +307,20 @@
 
             
             // add the tooltip area to the div element with id 'container'
-            var tooltip = d3.select("#container")
+            var tooltip = d3.select('#container')
                 .append("div")
                 .attr("class", "tooltip")
                 .style("width", "180px")
                 .style('height',"60px")
                 .style("opacity", 0);
-            
+                
+            //add a selected circle variable 
+            var selectedCircle = svg.append('circle')
+                .attr('class','selectedCircle')
+                .attr('cx',100)
+                .attr('cy',100)
+                .attr('r',0);
+             
             // create function to plot the circles - note, this is within the draw function    
             function plot_points(occupation_data) {
                 // bind the data to the circles and enter them - using data, not nested.
@@ -347,6 +347,7 @@
                         .style('fill', function(d){
                             return colorScale(d.OccGroup);
                             })
+                        .style('opacity',0.4)
                         .on("mouseover", function(d) {
                             tooltip.transition()
                             .duration(200)
@@ -355,16 +356,32 @@
                                          + "Income Group: " + d.income + "<br>"
                                          + "Mean APR: " + d3.format(".1%")(d.apr) +"<br>"
                                          + "Sample size: " + d3.format("0,000")(d.N))
-                            .style('font-size',"10pt")
-                            .style("left", (d3.event.pageX + 5) + "px")
-                            .style("top", (d3.event.pageY - 28) + "px")
-                            .style("background-color","white");
+                                .style('font-size',"10pt")
+                                .style("left", (d3.event.pageX + 5) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px")
+                                .style("background-color","white");
+                            
+                            selectedCircle.transition()
+                                .duration(200)
+                                .style('opacity', 1.0)
+                                .attr('cx', xScale(d.income) + margin.left)
+                                .attr('cy', yScale(d.apr) + margin.top)
+                                .attr('r', rScale(d.N))
+                                .style('fill',function(d){
+                                    return colorScale(d.OccGroup);
+                                    });
                             })
                         .on("mouseout", function(d) {
                             tooltip.transition()
-                            .duration(500)
-                            .style("opacity", 0);
-                        });
+                                .duration(500)
+                                .style("opacity", 0);
+                            
+                            selectedCircle.transition()
+                                .duration(500)
+                                .style('opacity',0);
+                            
+                            });
+                       
                 
             }// END of function plot points(data)    
             
@@ -422,7 +439,7 @@
                 
             // define update function, to plot the data for a specific occupation
             function update(occupation) {
-                d3.select(".drawtitle")
+                d3.select(".occupTitle")
                     .text(occupation);
             
                 // first filter the main data to return only datapoints equal to that occupation
@@ -456,7 +473,7 @@
                 
                 var legends = legendDraw(uniqueOccupations);
                 
-                d3.select('h1.drawtitle')
+                d3.select('.occupTitle')
                     .text('Occupations');
             }
         }, 10);
