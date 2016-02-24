@@ -187,7 +187,7 @@
                     .attr("font-size","10px")
                     .style("text-anchor", "start");
                
-                legend.on("click", function(d) {
+                legend.on("mouseover", function(d) {
                     d3.selectAll(".legend")
                         .select("rect.legendBox2")
                         .transition()
