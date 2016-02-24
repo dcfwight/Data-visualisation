@@ -61,21 +61,22 @@ loans_simple <- loans_simple[loans_simple$income != "Not employed",]
 ```
 
 ```{r,echo=FALSE}
-# simplify the levels and rename them
+# remove the empty levels
 loans_simple <- droplevels(loans_simple)
+```
 
+```{r,echo=FALSE}
+# simplify the names
 levels(loans_simple$income) <- list("$1-25k" = "$1-24,999", "$100k+" = "$100,000+", "$25-50k" = "$25,000-49,999", "$50-75k" = "$50,000-74,999", "$75-100k" = "$75,000-99,999")
 ```
 
 ```{r,echo=FALSE}
 # rearrange the order of the income levels to logical ordering
-levels(loans_simple$income) <- c("$1-25k","$25-50k","$50-75k","$75-100k","$100k+")
+loans_simple$income <- factor(loans_simple$income, levels(loans_simple$income)[c(1,3,4,5,2)]) 
 
-```
-###Examine structure of data
-```{r}
-# names(loans.df)
-summary(loans.df)
+# DO NOT USE the following line - this was where I was going wrong - this just renames the titles!
+#levels(loans_simple$income) <- c("$1-25k","$25-50k","$50-75k","$75-100k","$100k+")
+
 ```
 
 ```{r, echo = FALSE}
@@ -170,6 +171,18 @@ loans_simple$occupation <- NULL
 write.csv(loans_simple, file = "loans_simple.csv")
 ```
 
+```{r, echo=FALSE}
+AprMeanReduced2$id = seq.int(nrow(AprMeanReduced2))
+```
+
+
+```{r, echo= FALSE}
+write.csv(AprMeanReduced2, file = "loans_clean.csv")
+```
+
+
+
+### Beyond this point was the initial preparatory data analysis - I did this first, but then moved to the bottom, so that I could quickly make changes to the data preparation, without wading through the graph coding.
 
 ###Histogram of Income Ranges
 ```{r, echo = FALSE}
@@ -547,8 +560,6 @@ ggplot(aes(x= factor(TotalProsperLoans),
 
 Quite an interesting boxplot - take out more loans. But NOTE, the number of those with 7 loans is very small.
 
-
-
 ##Look at Bar-chart for borrower rate by occupation, but for the £25-50k income factor ONLY. Did this to show how to subset
 ```{r, echo= FALSE}
 ggplot(aes(x = Occupation),
@@ -572,8 +583,6 @@ ggplot(aes(x = Occupation),
   ggtitle('Number of borrowers by Occupation')+
   theme_economist()
 ```
-
-
 
 ## Now Look at Bar-chart for borrower rate by Occupation, for ALL incomes.
 ```{r, echo= FALSE}
@@ -872,11 +881,6 @@ AprMeanReducedFinal <- subset(AprMeanReduced,IncomeRange %in%
                           "$100k+"))
 write.csv(AprMeanReducedFinal, file = "apr_data.csv")
 ```
-
-```{r, echo= FALSE}
-write.csv(AprMeanReduced2, file = "loans_clean.csv")
-```
-
 
 
 ## following the tooth growth example (google it....)
