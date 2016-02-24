@@ -11,6 +11,10 @@ circle {
         opacity: 0.6;
         stroke: none;
       }
+
+div {
+    width: 800px;
+}
       
 .axis path,
 .axis line {
