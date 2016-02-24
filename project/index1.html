@@ -138,11 +138,11 @@
                     .text('Average Borrower APR');           
             
             // create a scale for the radius of the circles
-                var rScale = d3.scale.linear()
+                var rScale = d3.scale.sqrt()
                     .domain([0,d3.max(data, function(d){
                         return d.N;
                         })])
-                    .range([5,50]);
+                    .range([1,50]);
             
             // draw legend
             function legendDraw(occupations) { 
@@ -307,7 +307,6 @@
             // create function to plot the circles - note, this is within the draw function    
             function plot_points(occupation_data) {
                 
-                debugger;
                 // bind the data to the circles and enter them - using data, not nested.
                 var circles = svg.selectAll('.plottedCircle')
                     .data(occupation_data, function(d){
