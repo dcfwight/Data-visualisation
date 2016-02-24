@@ -27,6 +27,21 @@ div {
     font-size: 12px;
 }
 
+.buttonRect{
+    fill:lightgray;
+    rx: 3;
+    ry: 3;
+}
+
+.buttonText{
+    font-family: sans-serif;
+    dominant-baseline: central;
+    font-size: 10px;
+    fill: black;
+    text-anchor: left;
+    
+}
+
 .grid .tick {
     stroke: lightgrey;
     stroke-opacity: 0.7;
