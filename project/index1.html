@@ -375,7 +375,7 @@
                 var line = d3.svg.line()
                     .x(function(d) { return xScale(d.income) + margin.left; })
                     .y(function(d) { return yScale(d.apr) +margin.top; })
-                    .interpolate("bundle");
+                    .interpolate("cardinal");
                 
                 // create the linePath for all the individual occupations
                 var linePath = d3.select('svg')
