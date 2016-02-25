@@ -161,14 +161,39 @@
                     })])
                 .range([1,40]);
             
-            // make buttons for the occupations
+            // make button for the animation
+            var animateButton = svg.append('g')
+                .attr('class', 'animateButton')
+                .style('cursor','pointer')
+                .on('click', function(d){
+                    animationLoop();
+                    });
             
+            animateButton.append('rect')
+                    .attr('x', 50)
+                    .attr('y', 450)
+                    .attr('rx',5)
+                    .attr('ry', 5)
+                    .attr('width', 90)
+                    .attr('height', 20)
+                    .attr('fill','#7777BB');
+                
+            animateButton.append('text')
+                    .attr('class','animateText')
+                    .attr('x', 56)
+                    .attr('y', 464)
+                    .text('Run animation')
+                    .attr('fill','white')
+                    .attr('font-family','sans-serif')
+                    .attr('font-size', 12);
+            
+            
+            // make buttons for the occupations
             // set the colors for interaction 
             var defaultColor= "#7777BB";
             var hoverColor= "#0000ff";
             var pressedColor= "#000077";
-            
-            
+        
             // first make a container for the group of buttons
             var allButtons= svg.append("g")
                 .attr("id","allButtons");
@@ -469,34 +494,37 @@
         
         // first draw the line for the averages
         lineDrawAverage(nestedIncome);
+        lineDraw(data, lineColor = 'red',lineOpacity = 0.2);
     
-        // to loop through all occupations, drawing circles and points:
-        occup_idx = 0
+        function animationLoop() {
+        // to loop through all occupations, drawing circles and points:   
         
-        var occupation_interval = setInterval(function(){
-            update(uniqueOccupations[occup_idx]);
-            occup_idx++;
+            occup_idx = 0
             
-            if (occup_idx >= uniqueOccupations.length) {
-                clearInterval(occupation_interval);
+            var occupation_interval = setInterval(function(){
+                update(uniqueOccupations[occup_idx]);
+                occup_idx++;
                 
-                var circles = plot_points(data, circleColor ="red", circleOpacity = 0.0);
-                d3.selectAll("circle")
-                    .style('opacity', 0.0);
-                
-                
-                var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.2);
-                // next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
-                d3.selectAll('.occupPath')
-                    .style('opacity', 0.2); 
-                
-                //var legends = legendDraw(uniqueOccupations);
-                
-                d3.select('.occupTitle')
-                    .text('Click on occupation to show its data');
-            }
-        }, 50);
-        
+                if (occup_idx >= uniqueOccupations.length) {
+                    clearInterval(occupation_interval);
+                    
+                    var circles = plot_points(data, circleColor ="red", circleOpacity = 0.0);
+                    d3.selectAll("circle")
+                        .style('opacity', 0.0);
+                    
+                    
+                    var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.2);
+                    // next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
+                    d3.selectAll('.occupPath')
+                        .style('opacity', 0.2); 
+                    
+                    //var legends = legendDraw(uniqueOccupations);
+                    
+                    d3.select('.occupTitle')
+                        .text('Click on occupation to show its data');
+                }
+            }, 50);
+        } // END of function animationLoop
         
         };// END of function draw(data
         
