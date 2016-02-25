@@ -45,6 +45,43 @@
                 .text('Average APR by occupation and income level');
             */
             
+            // Manipulate the data
+            // created a nested function, grouping the data by Occupation group.
+            var nested = d3.nest()
+                .key(function(d){
+                    return d.OccGroup;
+                    }
+                    ).sortKeys(d3.ascending)
+                .entries(data);
+           
+            // created nestedIncome variable to average the APR across all occupations
+            // use this to create the average APR line and circles only.
+            var nestedIncome = d3.nest()
+                .key(function(d){
+                    return d.income;
+                    })
+                .rollup(function(leaves){
+                    var meanApr = d3.mean(leaves, function(d) {
+                    return d['apr'];
+                    });
+                    return meanApr;
+                })   
+                .entries(data);
+            
+            // create linesArray which reshapes the data into easier format to use with linedraw function
+            var linesArray = [];
+            for (i in nested){
+                pathInfo = [];
+                for (j in nested[i].values){
+                    pathInfo.push({'id': nested[i].values[j].id,
+                                    'apr': nested[i].values[j].apr,
+                                    'income': nested[i].values[j].income});
+                    }
+               
+                linesArray.push({'key': nested[i].key,
+                                'values': pathInfo});
+            }
+            debugger;
             // Create svg variable to use with D3 code 
             var svg = d3.select("#container")
                 .append("svg")
@@ -66,7 +103,7 @@
                 .attr('x', (width-buttonBuffer)/2)
                 .attr('y', 45)
                 .style('text-anchor','middle')
-                .text("Occupation");
+                .text("Run animation or click on Occupation");
             
             // Create a set of unique occupations called 'occupations' by adding to it.
             var occupations = d3.set();
@@ -187,6 +224,31 @@
                     .attr('font-family','sans-serif')
                     .attr('font-size', 12);
             
+            // make button to show all
+            var showAllButton = svg.append('g')
+                .attr('class', 'showAllButton')
+                .style('cursor','pointer')
+                .on('click', function(){
+                    lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
+                    });
+            debugger;
+            showAllButton.append('rect')
+                    .attr('x', 150)
+                    .attr('y', 450)
+                    .attr('rx',5)
+                    .attr('ry', 5)
+                    .attr('width', 90)
+                    .attr('height', 20)
+                    .attr('fill','#7777BB');
+                
+            showAllButton.append('text')
+                    .attr('class','showAllText')
+                    .attr('x', 156)
+                    .attr('y', 464)
+                    .text('Show all')
+                    .attr('fill','white')
+                    .attr('font-family','sans-serif')
+                    .attr('font-size', 12);
             
             // make buttons for the occupations
             // set the colors for interaction 
@@ -276,27 +338,7 @@
                     .attr("fill",pressedColor);
             }
             
-            // created a nested function, grouping the data by Occupation group.
-            var nested = d3.nest()
-                .key(function(d){
-                    return d.OccGroup;
-                    }
-                    ).sortKeys(d3.ascending)
-                .entries(data);
-           
-            // created nestedIncome variable to average the APR across all occupations
-            // use this to create the average APR line and circles only.
-            var nestedIncome = d3.nest()
-                .key(function(d){
-                    return d.income;
-                    })
-                .rollup(function(leaves){
-                    var meanApr = d3.mean(leaves, function(d) {
-                    return d['apr'];
-                    });
-                    return meanApr;
-                })   
-                .entries(data);
+            
 
             // create the circles for the average APR
             var avgCircles = svg.selectAll('.averageCircle')
@@ -310,9 +352,9 @@
                 .attr('cy', function(d){
                     return yScale(d.values) + margin.top;
                     })
-                .attr('r', 5)
+                .attr('r', 3)
                 .style('fill', "black")
-                .style('opacity', 0.5)
+                .style('opacity', 1)
                 .on("mouseover", function(d) {
                     tooltip.transition()
                     .duration(200)
@@ -331,19 +373,7 @@
                     .style("opacity", 0);
                 });
             
-            // create linesArray which reshapes the data into easier format to use with linedraw function
-            var linesArray = [];
-            for (i in nested){
-                pathInfo = [];
-                for (j in nested[i].values){
-                    pathInfo.push({'id': nested[i].values[j].id,
-                                    'apr': nested[i].values[j].apr,
-                                    'income': nested[i].values[j].income});
-                    }
-               
-                linesArray.push({'key': nested[i].key,
-                                'values': pathInfo});
-            }
+            
 
             
             // add the tooltip area to the div element with id 'container'
@@ -517,8 +547,6 @@
                     // next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
                     d3.selectAll('.occupPath')
                         .style('opacity', 0.2); 
-                    
-                    //var legends = legendDraw(uniqueOccupations);
                     
                     d3.select('.occupTitle')
                         .text('Click on occupation to show its data');
