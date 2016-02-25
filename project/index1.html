@@ -21,7 +21,8 @@
                 buttonSpace = 1,
                 buttonX0 = (width - (2* buttonWidth) - 2),
                 buttonY0 = 2
-                buttonBuffer = 2* buttonWidth;
+                buttonBuffer = (2* buttonWidth) +10;
+        debugger;
             
         // Create percentage format variable for use in axes
         var formatAsPercentage = d3.format("1%");
@@ -103,7 +104,7 @@
                     .attr("class","x axis")
                     .call(xAxis)
                 .append('text')
-                    .attr("x", width - buttonBuffer)
+                    .attr("x", width - buttonBuffer - margin.right)
                     .attr("y", -6)
                     .style("text-anchor","end")
                     .text("Income Bracket");    
@@ -166,10 +167,19 @@
             var defaultColor= "#7777BB";
             var hoverColor= "#0000ff";
             var pressedColor= "#000077";
-            // first make a container for the group of buttons
             
+            
+            // first make a container for the group of buttons
             var allButtons= svg.append("g")
                 .attr("id","allButtons");
+            
+            function updateButtonColors(button, parent) {
+                parent.selectAll("rect")
+                    .attr("fill",defaultColor);
+                    
+                button.select("rect")
+                .attr("fill",pressedColor);
+            }
                     
             // creat a group for each button (rect and text)
             var buttonGroups= allButtons.selectAll("g.button")
@@ -179,15 +189,23 @@
                 .attr("class","button")
                 .style("cursor","pointer")
                 .on("click",function(d) {
-                                updateButtonColors(d3.select(this), d3.select(this.parentNode))
+                    updateButtonColors(d3.select(this), d3.select(this.parentNode))
                 })
                 .on("mouseover", function() {
                     if (d3.select(this).select("rect").attr("fill") != pressedColor) {
-                        d3.select(this)
+                         d3.select(this)
                             .select("rect")
                             .attr("fill",hoverColor);
-                    }
+                     }
                 })
+                .on("click",function(d,i) {
+                                updateButtonColors(d3.select(this), d3.select(this.parentNode))
+                                d3.select("#numberToggle").text(i+1)
+                            })
+                .on("click", function(d){
+                    update(d);
+                    })
+                
                 .on("mouseout", function() {
                     if (d3.select(this).select("rect").attr("fill") != pressedColor) {
                         d3.select(this)
@@ -224,9 +242,7 @@
                 .text(function(d) {
                     return d;
                     }); 
-           
-           
-            
+             
             function updateButtonColors(button, parent) {
                 parent.selectAll("rect")
                     .attr("fill",defaultColor);
@@ -235,7 +251,7 @@
                     .attr("fill",pressedColor);
             }
             
-            debugger;
+           
             /* 
             // draw legend - this code works, just switching to new buttons
             function legendDraw(occupations) { 
@@ -558,7 +574,7 @@
                 //var legends = legendDraw(uniqueOccupations);
                 
                 d3.select('.occupTitle')
-                    .text('Occupations');
+                    .text('Mouse over occupation to show its data');
             }
         }, 10);
         
