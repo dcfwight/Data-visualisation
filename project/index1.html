@@ -337,7 +337,7 @@
                 .attr('r',0);
              
             // create function to plot the circles - note, this is within the draw function    
-            function plot_points(occupation_data) {
+            function plot_points(occupation_data, circleColor, circleOpacity) {
                 // bind the data to the circles and enter them - using data, not nested.
                 var circles = svg.selectAll('.plottedCircle')
                     .data(occupation_data, function(d){
@@ -359,10 +359,8 @@
                         .attr('r', function(d){
                             return rScale(d.N);
                             })
-                        .style('fill', function(d){
-                            return colorScale(d.OccGroup);
-                            })
-                        .style('opacity',0.4)
+                        .style('fill', circleColor)
+                        .style('opacity', circleOpacity)
                         .on("mouseover", function(d) {
                             tooltip.transition()
                             .duration(200)
@@ -401,7 +399,7 @@
             }// END of function plot points(data)    
             
             // Create function to draw a line for an occupation group
-            function lineDraw(occupation_data) {
+            function lineDraw(occupation_data, lineColor, lineOpacity) {
 
                 // Create variable to define pixel points of the line
                 var line = d3.svg.line()
@@ -419,17 +417,16 @@
                 linePath.enter()
                     .append('g')
                         .attr('class','occupLine')
-                        .style('stroke', (function(d){
-                            return colorScale(d.key);
-                            }));
+                        .style('stroke', lineColor);
                 
                 linePath.exit().remove();
                 
                 linePath.append('path')
-                        .attr('class','line')
+                        .attr('class','line occupPath')
                         .attr('d', function(d){
                             return line(d.values);
-                            });
+                            })
+                        .style('opacity', lineOpacity);
                         
                 linePath.exit().remove();
                  }; // End of function lineDraw(occupation)
@@ -465,9 +462,9 @@
                 occup_line_data = linesArray.filter(function(d){
                     return d.key === occupation;
                     });
-                plot_points(occup_points_data); // pass those points to the plot_points function
+                plot_points(occup_points_data, circleColor = 'red', circleOpacity = 1); // pass those points to the plot_points function
                 
-                lineDraw(occup_line_data); // pass those points to the lineDraw function
+                lineDraw(occup_line_data, lineColor = 'red', lineOpacity = 1); // pass those points to the lineDraw function
             }
         
         // first draw the line for the averages
@@ -483,15 +480,22 @@
             if (occup_idx >= uniqueOccupations.length) {
                 clearInterval(occupation_interval);
                 
-                var circles = plot_points(data);
-                var lines = lineDraw(linesArray);
+                var circles = plot_points(data, circleColor ="red", circleOpacity = 0.0);
+                d3.selectAll("circle")
+                    .style('opacity', 0.0);
+                
+                
+                var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.2);
+                // next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
+                d3.selectAll('.occupPath')
+                    .style('opacity', 0.2); 
                 
                 //var legends = legendDraw(uniqueOccupations);
                 
                 d3.select('.occupTitle')
-                    .text('Mouse over occupation to show its data');
+                    .text('Click on occupation to show its data');
             }
-        }, 10);
+        }, 50);
         
         
         };// END of function draw(data
