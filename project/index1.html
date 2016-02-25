@@ -127,7 +127,7 @@
             // Change the padding if the data is too close to edges  
             var xScale = d3.scale.ordinal()
                 .domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
-                .rangePoints([0,width - buttonBuffer],1);
+                .rangePoints([0,(width - buttonBuffer-50)],1);
                 
             // create the x-axis object (note - not added yet, just defined the variable)
             var xAxis = d3.svg.axis()
@@ -141,7 +141,7 @@
                     .attr("class","x axis")
                     .call(xAxis)
                 .append('text')
-                    .attr("x", width - buttonBuffer - margin.right)
+                    .attr("x", (width - buttonBuffer-50))
                     .attr("y", -6)
                     .style("text-anchor","end")
                     .text("Income Bracket");    
@@ -373,8 +373,40 @@
                     .style("opacity", 0);
                 });
             
-            
-
+            function showCircleScale() {
+                // want to show 3 circles, with sample sizes for when they are selected
+                
+                var sizes = [1000, 2000, 4000, 8000];
+                
+                var scaleCircles = myChart.selectAll('scaleCircleG')
+                    .data(sizes)
+                        .enter()
+                    .append('g')
+                        .attr('class','scaleCircle');
+                
+               scaleCircles.append('circle')
+                    .attr('class','scaleCircleCircle')
+                    .attr('cx', function(d,i) {
+                        return (i*80) +300;
+                        })
+                    .attr('cy', yScale(0.075))
+                    .attr('r',function(d){
+                        return rScale(d);
+                        })
+                    .attr('fill', 'red');
+                    
+                scaleCircles.append('text')
+                    .attr('class','scaleCircleText')
+                    .attr('x',function(d,i) {
+                        return (i*80) +300;
+                        })
+                    .attr('y', yScale(0.03))
+                    .text(function(d){
+                        return d3.format("0,000")(d);
+                        })
+                    .attr('text-anchor','middle');
+            }
+            showCircleScale();
             
             // add the tooltip area to the div element with id 'container'
             var tooltip = d3.select('#container')
@@ -388,7 +420,7 @@
             var selectedCircle = svg.append('circle')
                 .attr('class','selectedCircle')
                 .attr('cx',100)
-                .attr('cy',100)
+                .attr('cy',300)
                 .attr('r',0);
              
             // create function to plot the circles - note, this is within the draw function    
@@ -520,11 +552,13 @@
                 plot_points(occup_points_data, circleColor = 'red', circleOpacity = 1); // pass those points to the plot_points function
                 
                 lineDraw(occup_line_data, lineColor = 'red', lineOpacity = 1); // pass those points to the lineDraw function
+                
+                lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
             }
         
         // first draw the line for the averages
         lineDrawAverage(nestedIncome);
-        lineDraw(data, lineColor = 'red',lineOpacity = 0.2);
+        lineDraw(linesArray, lineColor = 'red',lineOpacity = 0.2);
     
         function animationLoop() {
         // to loop through all occupations, drawing circles and points:   
@@ -539,7 +573,7 @@
                     clearInterval(occupation_interval);
                     
                     var circles = plot_points(data, circleColor ="red", circleOpacity = 0.0);
-                    d3.selectAll("circle")
+                    d3.selectAll(".plottedCircle")
                         .style('opacity', 0.0);
                     
                     
