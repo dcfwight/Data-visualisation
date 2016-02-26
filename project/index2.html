@@ -263,7 +263,7 @@
             // first make a container for the group of buttons
             var allButtons= svg.append("g")
                 .attr("id","allButtons");
-                    
+            
             // creat a group for each button (rect and text)
             var buttonGroups= allButtons.selectAll("g.button")
                 .data(uniqueOccupations)
@@ -272,7 +272,8 @@
                 .attr("class","button")
                 .style("cursor","pointer")
                 .on("click",function(d) {
-                    updateButtonColors(d3.select(this), d3.select(this.parentNode))
+                    updateButtonColors(d3.select(this), d3.select(this.parentNode));
+                    update(d);
                 })
                 .on("mouseover", function() {
                     if (d3.select(this).select("rect").attr("fill") != pressedColor) {
@@ -281,14 +282,6 @@
                             .attr("fill",hoverColor);
                      }
                 })
-                .on("click",function(d,i) {
-                                updateButtonColors(d3.select(this), d3.select(this.parentNode))
-                                d3.select("#numberToggle").text(i+1)
-                            })
-                .on("click", function(d){
-                    update(d);
-                    })
-                
                 .on("mouseout", function() {
                     if (d3.select(this).select("rect").attr("fill") != pressedColor) {
                         d3.select(this)
