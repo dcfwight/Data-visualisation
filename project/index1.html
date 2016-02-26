@@ -71,7 +71,6 @@
                             'N':total};
                 })   
                 .entries(data);
-            debugger;
             
             // create linesArray which reshapes the data into easier format to use with linedraw function
             var linesArray = [];
@@ -343,8 +342,6 @@
                     .attr("fill",pressedColor);
             }
             
-            
-            debugger;
             // create the circles for the average APR
             var avgCircles = svg.selectAll('.averageCircle')
                 .data(nestedIncome)
