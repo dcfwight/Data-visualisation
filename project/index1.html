@@ -22,7 +22,6 @@
                 buttonX0 = (width - (2* buttonWidth) - 2),
                 buttonY0 = 2
                 buttonBuffer = (2* buttonWidth) +10;
-        debugger;
             
         // Create percentage format variable for use in axes
         var formatAsPercentage = d3.format("1%");
@@ -64,9 +63,15 @@
                     var meanApr = d3.mean(leaves, function(d) {
                     return d['apr'];
                     });
-                    return meanApr;
+                    
+                    var total = d3.sum(leaves, function(d){
+                        return d['N'];
+                        });
+                    return {"meanApr": meanApr,
+                            'N':total};
                 })   
                 .entries(data);
+            debugger;
             
             // create linesArray which reshapes the data into easier format to use with linedraw function
             var linesArray = [];
@@ -81,7 +86,7 @@
                 linesArray.push({'key': nested[i].key,
                                 'values': pathInfo});
             }
-            debugger;
+        
             // Create svg variable to use with D3 code 
             var svg = d3.select("#container")
                 .append("svg")
@@ -196,7 +201,7 @@
                 .domain([0,d3.max(data, function(d){
                     return d.N;
                     })])
-                .range([1,40]);
+                .range([1,30]);
             
             // make button for the animation
             var animateButton = svg.append('g')
@@ -339,7 +344,7 @@
             }
             
             
-
+            debugger;
             // create the circles for the average APR
             var avgCircles = svg.selectAll('.averageCircle')
                 .data(nestedIncome)
@@ -350,18 +355,20 @@
                     return xScale(d.key) + margin.left;
                     })
                 .attr('cy', function(d){
-                    return yScale(d.values) + margin.top;
+                    return yScale(d.values.meanApr) + margin.top;
                     })
-                .attr('r', 3)
+                .attr('r', function(d){
+                    return rScale(d.values.N);
+                    })
                 .style('fill', "black")
-                .style('opacity', 1)
+                .style('opacity', 0.15)
                 .on("mouseover", function(d) {
                     tooltip.transition()
                     .duration(200)
                     .style("opacity", 0.9);
                     tooltip.html("Average" + "<br>"
                                  + "Income Group: " + d.key + "<br>"
-                                 + "Mean APR: " + d3.format(".1%")(d.values))
+                                 + "Mean APR: " + d3.format(".1%")(d.values.meanApr))
                     .style('font-size',"10pt")
                     .style("left", (d3.event.pageX + 5) + "px")
                     .style("top", (d3.event.pageY - 28) + "px")
@@ -377,6 +384,11 @@
                 // want to show 3 circles, with sample sizes for when they are selected
                 
                 var sizes = [1000, 2000, 4000, 8000];
+                
+                myChart.append('text')
+                    .attr('x',300 - rScale(sizes[0]))
+                    .attr('y',yScale(0.11))
+                    .text('Sample sizes');
                 
                 var scaleCircles = myChart.selectAll('scaleCircleG')
                     .data(sizes)
@@ -524,7 +536,7 @@
                 // create slightly different line format to deal with the average data 
                 var averageLine =  d3.svg.line()
                     .x(function(d) { return xScale(d.key) + margin.left; })
-                    .y(function(d) { return yScale(d.values) +margin.top; })
+                    .y(function(d) { return yScale(d.values.meanApr) +margin.top; })
                     .interpolate("linear");       
                 
                 var averageLinePath = d3.select('svg')
@@ -583,9 +595,9 @@
                         .style('opacity', 0.2); 
                     
                     d3.select('.occupTitle')
-                        .text('Click on occupation to show its data');
+                        .text('Run animation or click on Occupation');
                 }
-            }, 50);
+            }, 500);
         } // END of function animationLoop
         
         };// END of function draw(data
