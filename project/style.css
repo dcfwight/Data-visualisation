@@ -28,7 +28,6 @@ div {
 }
 
 .buttonRect{
-    fill:lightgray;
     rx: 3;
     ry: 3;
 }
@@ -36,10 +35,7 @@ div {
 .buttonText{
     font-family: sans-serif;
     dominant-baseline: central;
-    font-size: 10px;
-    fill: black;
-    text-anchor: left;
-    
+    text-anchor: left; 
 }
 
 .grid .tick {
@@ -57,7 +53,7 @@ div {
 }
 
 .occupTitle{
-    font-size: 30px;
+    font-size: 20px;
     text-anchor: middle;
 }
 
