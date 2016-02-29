@@ -34,6 +34,12 @@
                       "#006d2c","#11441b","#bba7fb","#ecedb0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a",
                       "#016c59","#01cd36","#f137fb","#e267f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
         
+        // set the colors for interactive buttons
+            var defaultColor= "#7777BB";
+            var hoverColor= "#0000ff";
+            var pressedColor= "red";
+            
+        
         function draw(data) {
             // Manipulate the data
             // created a nested function, grouping the data by Occupation group.
@@ -96,8 +102,9 @@
             myChart.append('text')
                 .attr("class", "occupTitle")
                 .attr('x', (width-buttonBuffer)/2)
-                .attr('y', 45)
+                .attr('y', 41)
                 .style('text-anchor','middle')
+                .style('font-size', 30)
                 .text("Run animation or click on Occupation");
             
             // Create a set of unique occupations called 'occupations' by adding to it.
@@ -139,6 +146,7 @@
                     .attr("x", (width - buttonBuffer-50))
                     .attr("y", -6)
                     .style("text-anchor","end")
+                    .style('font-size',15)
                     .text("Income Bracket");    
             
             // construct the y axis scale. This is linear as it is a range of apr values.
@@ -174,6 +182,7 @@
                     .attr('x', -4)
                     .attr('dy', ".71em")
                     .style('text-anchor','end')
+                    .style('font-size', 15)
                     .style('fill','black')
                     .text('Average Borrower APR');           
             
@@ -199,6 +208,8 @@
                 .style('cursor','pointer')
                 .on('click', function(d){
                     animationLoop();
+                    svg.selectAll('.buttonRect')
+                        .attr('fill',defaultColor);
                     });
             
             animateButton.append('rect')
@@ -246,11 +257,7 @@
                     .attr('font-size', 12);
             
             // make buttons for the occupations
-            // set the colors for interaction 
-            var defaultColor= "#7777BB";
-            var hoverColor= "#0000ff";
-            var pressedColor= "#000077";
-        
+            
             // first make a container for the group of buttons
             var allButtons= svg.append("g")
                 .attr("id","allButtons");
@@ -330,11 +337,14 @@
                 .attr('cy', function(d){
                     return yScale(d.values.meanApr) + margin.top;
                     })
+                .attr('r',5)
+                /*From discussing with Udacity reviewer - taken out sample sizes.
                 .attr('r', function(d){
                     return rScale(d.values.N);
                     })
+                */
                 .style('fill', "black")
-                .style('opacity', 0.15)
+                .style('opacity', 0.5)
                 .on("mouseover", function(d) {
                     tooltip.transition()
                     .duration(200)
@@ -354,8 +364,9 @@
                 });
             
             function showCircleScale() {
-                // want to show 3 circles, with sample sizes for when they are selected
-                
+                // want to show 4 circles, with sample sizes for when they are selected
+                // NB - after discussion with reviwer, removed this from the SVG - viewer not
+                // really interested in sample sizes
                 var sizes = [1000, 2000, 4000, 8000];
                 
                 myChart.append('text')
@@ -391,7 +402,11 @@
                         })
                     .attr('text-anchor','middle');
             }
+            /*
+            //Taken out the showCircleScale, after discussion with Udacity reviewer - viewer probably
+            // not interested in sample sizes.
             showCircleScale();
+            */
             
             // add the tooltip area to the div element with id 'container'
             var tooltip = d3.select('#container')
@@ -428,9 +443,13 @@
                         .attr('cy', function(d){
                             return yScale(d.apr) + margin.top;
                             })
+                        .attr('r',8)
+                        /* I removed this, on discussion with Udacity reviewer
+                         * Viewer is prob not interested in sample sizes.
                         .attr('r', function(d){
                             return rScale(d.N);
                             })
+                        */
                         .style('fill', circleColor)
                         .style('opacity', circleOpacity)
                         .on("mouseover", function(d) {
@@ -451,7 +470,8 @@
                                 .style('opacity', 1.0)
                                 .attr('cx', xScale(d.income) + margin.left)
                                 .attr('cy', yScale(d.apr) + margin.top)
-                                .attr('r', rScale(d.N))
+                                .attr('r',10)
+                                //.attr('r', rScale(d.N))
                                 .style('fill',function(d){
                                     return colorScale(parent.OccGroup);
                                     });
@@ -489,7 +509,7 @@
                 linePath.enter()
                     .append('g')
                         .attr('class','occupLine')
-                        .style('stroke', lineColor);
+                        .style('stroke', lineColor);   
                 
                 linePath.exit().remove();
                 
@@ -498,7 +518,8 @@
                         .attr('d', function(d){
                             return line(d.values);
                             })
-                        .style('opacity', lineOpacity);
+                        .style('opacity', lineOpacity)
+                        .attr('stroke-width', lineWidth);
                         
                 linePath.exit().remove();
                  }; // End of function lineDraw(occupation)
@@ -516,7 +537,7 @@
                     .append('path')
                     .attr('d', averageLine(averagedata))
                     .attr('stroke','black')
-                    .attr('stroke-width',4)
+                    .attr('stroke-width',3)
                     .attr('fill','none');
       
             } // end of lineDrawAverage function
@@ -536,9 +557,9 @@
                     });
                 plot_points(occup_points_data, circleColor = 'red', circleOpacity = 1); // pass those points to the plot_points function
                 
-                lineDraw(occup_line_data, lineColor = 'red', lineOpacity = 1); // pass those points to the lineDraw function
+                lineDraw(occup_line_data, lineColor = 'red', lineOpacity = 1, lineWidth = 3); // pass those points to the lineDraw function
                 
-                lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
+                lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15, lineWidth = 1.5);
             }
         
         // first draw the line for the averages
@@ -559,10 +580,10 @@
                     
                     var circles = plot_points([], circleColor ="red", circleOpacity = 0.0);
                     
-                    var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.2);
+                    var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.3);
                     // next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
                     d3.selectAll('.occupPath')
-                        .style('opacity', 0.2); 
+                        .style('opacity', 0.3); 
                     
                     d3.select('.occupTitle')
                         .text('Run animation or click on Occupation');
@@ -578,6 +599,22 @@
 <body>
     <div id="container">
         <h1>Average loan rate by occupation and income level</h1>
+        <h3>Do pilots face sky-high levels of interest? Are bus drivers taken for a ride?</h3>
+        <p>The following analysis allows you to find out. I took data from <a href='http://www.prosper.com'>Prosper</a>
+        , which is a peer-to-peer lending site. This data was sourced from Udacity. It had data on 113,937 loans with
+        81 variables on each loan, including loan amount, borrower rate (or interest rate), current loan status,
+        borrower income, and many others. The data was last updated 03/11/2014. These loans are all unsecured loans.</p>
+        <p>I decided to focus on occupation and income level. Please use the graph below to explore whether
+        different occupations face different loan rates (APRs) even when they are in the same income bracket.</p>
+        <h3>How to interpret and use the graph</h3>
+        <ul>
+            <li>I have calculated the average APR for each occupation and each income group</li>
+            <li>Each occupation has a different APR profile</li>
+            <li>To examine each, either run the animation, or select an occupation from the list on the right</li>
+            <li>To see precise details for each occupation and income level, use the tool-tip</li>
+            <li>The overall average for the entire group is shown in black</li>
+            <li>For more details on the data preparation, see below the chart</li>
+        </ul>
     </div>
     
     <script type="text/javascript">
