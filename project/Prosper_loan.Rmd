@@ -35,7 +35,7 @@ loans.df <- data.frame(loans_original)
 
 
 ```{r, echo=FALSE}
-# ListingCategory is currenty a numeric field, but it should really be a category.
+# ListingCategory is currently a numeric field, but it should really be a category.
 # Create the correct category field. Can map it to the correct terms, if interesting.
 loans.df$ListingCategory <- factor(loans.df$ListingCategory..numeric.)
 
@@ -185,8 +185,6 @@ AprMeanReduced2 <- AprMeanReduced2[,c("id","OccGroup","income","apr","N")]
 write.csv(AprMeanReduced2, file = "../loans_clean.csv")
 ```
 
-
-
 ### Beyond this point was the initial preparatory data analysis - I did this first, but then moved to the bottom, so that I could quickly make changes to the data preparation, without wading through the graph coding.
 
 ###Histogram of Income Ranges
@@ -203,7 +201,7 @@ ggplot(aes(x=income),
 ```{r, echo = FALSE}
 ggplot(aes(x=BorrowerRate),
        data = loans.df)+
-  geom_histogram(binwidth = 0.005,
+  geom_histogram(binwidth = 0.02,
                  fill='darkgreen') +
   scale_x_continuous() +
   xlab('Borrower rate') +
@@ -215,11 +213,28 @@ ggplot(aes(x=BorrowerRate),
 ggplot(aes(x=BorrowerAPR),
        data = loans.df)+
   geom_histogram(fill='darkgreen',
-                 binwidth=0.005) +
+                 binwidth=0.02) +
   scale_x_continuous() +
   xlab('BorrowerAPR') +
   ylab('Number')
 ```
+
+```{r, echo=FALSE}
+# turn listingCategory from integer into factor
+loans.df$listingCategory <- as.factor(loans.df$ListingCategory..numeric.)
+
+```
+
+###Histogram of Loan types
+```{r, echo = FALSE}
+ggplot(aes(x=ListingCategory),
+       data = loans.df)+
+  geom_bar(fill='darkgreen') +
+  scale_x_discrete() +
+  xlab('Listing type') +
+  ylab('Number')
+```
+
 
 ###Scatter of Borrower APR vs Borrower Rate
 as expected, very strong correlation between the two

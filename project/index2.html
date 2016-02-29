@@ -354,7 +354,7 @@
                     .style('font-size',"10pt")
                     .style("left", (d3.event.pageX + 5) + "px")
                     .style("top", (d3.event.pageY - 28) + "px")
-                    .style("background-color","white");
+                    .style("background-color","light-grey");
                 })
                 .on("mouseout", function(d) {
                     tooltip.transition()
@@ -566,10 +566,7 @@
                 if (occup_idx >= uniqueOccupations.length) {
                     clearInterval(occupation_interval);
                     
-                    var circles = plot_points(data, circleColor ="red", circleOpacity = 0.0);
-                    d3.selectAll(".plottedCircle")
-                        .style('opacity', 0.0);
-                    
+                    var circles = plot_points([], circleColor ="red", circleOpacity = 0.0);
                     
                     var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.2);
                     // next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
