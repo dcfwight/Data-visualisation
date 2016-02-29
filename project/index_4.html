@@ -236,8 +236,15 @@
                 .style('cursor','pointer')
                 .on('click', function(){
                     lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
+                    d3.selectAll(".plottedCircle")
+                        .style('opacity',0);
+                    d3.selectAll('.occupPath')
+                        .attr('stroke-width',1.5)
+                        .style('opacity',0.15);
+                    d3.selectAll('.buttonRect')
+                        .attr('fill',defaultColor);
                     });
-            debugger;
+                
             showAllButton.append('rect')
                     .attr('x', 150)
                     .attr('y', 450)
@@ -327,8 +334,9 @@
             
             // create the circles for the average APR
             var avgCircles = svg.selectAll('.averageCircle')
-                .data(nestedIncome)
-                    .enter()
+                .data(nestedIncome);
+                    
+            avgCircles.enter()
                 .append('circle')
                 .attr('class','averageCircle')
                 .attr('cx', function(d){
@@ -347,7 +355,7 @@
                 .style('opacity', 0.5)
                 .on("mouseover", function(d) {
                     tooltip.transition()
-                    .duration(200)
+                    .duration(50)
                     .style("opacity", 0.9);
                     tooltip.html("Average" + "<br>"
                                  + "Income Group: " + d.key + "<br>"
@@ -355,7 +363,7 @@
                     .style('font-size',"10pt")
                     .style("left", (d3.event.pageX + 5) + "px")
                     .style("top", (d3.event.pageY - 28) + "px")
-                    .style("background-color","light-grey");
+                    .style("background-color","white");
                 })
                 .on("mouseout", function(d) {
                     tooltip.transition()
@@ -466,15 +474,16 @@
                                 .style("background-color","white");
                             
                             selectedCircle.transition()
-                                .duration(200)
+                                .duration(50)
                                 .style('opacity', 1.0)
                                 .attr('cx', xScale(d.income) + margin.left)
                                 .attr('cy', yScale(d.apr) + margin.top)
                                 .attr('r',10)
                                 //.attr('r', rScale(d.N))
-                                .style('fill',function(d){
+                                /*.style('fill',function(d){
                                     return colorScale(parent.OccGroup);
-                                    });
+                                    })
+                                    */;
                             })
                         .on("mouseout", function(d) {
                             tooltip.transition()
@@ -564,7 +573,7 @@
         
         // first draw the line for the averages
         lineDrawAverage(nestedIncome);
-        lineDraw(linesArray, lineColor = 'red',lineOpacity = 0.2);
+        lineDraw(linesArray, lineColor = 'red',lineOpacity = 0.15);
     
         function animationLoop() {
         // to loop through all occupations, drawing circles and points:   
@@ -580,15 +589,15 @@
                     
                     var circles = plot_points([], circleColor ="red", circleOpacity = 0.0);
                     
-                    var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.3);
+                    var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 1);
                     // next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
                     d3.selectAll('.occupPath')
-                        .style('opacity', 0.3); 
+                        .style('opacity', 0.15); 
                     
                     d3.select('.occupTitle')
                         .text('Run animation or click on Occupation');
                 }
-            }, 500);
+            }, 50);
         } // END of function animationLoop
         
         };// END of function draw(data
@@ -597,7 +606,7 @@
       </script>
 </head>
 <body>
-    <div id="container">
+    <div id="intro">
         <h1>Average loan rate by occupation and income level</h1>
         <h3>Do pilots face sky-high levels of interest? Are bus drivers taken for a ride?</h3>
         <p>The following analysis allows you to find out. I took data from <a href='http://www.prosper.com'>Prosper</a>
@@ -617,6 +626,21 @@
         </ul>
     </div>
     
+    <div id="container">
+        <!--This is the container for the svg and interactive graph. Leave it in-->
+    </div>
+    
+    <div id="footer">
+        <h3>Data source</h3>
+        <p>This data was sourced from Udacity, but ultimately came from Prosper</p>
+        <h3>Data preparation</h3>
+        <p>I have focused on the APR and income groupings. I wrangled the data in R first, and amalgamated some occupations,
+        reducing the total number of different occupations from 66 to 50.</p>
+        <h3>Last update</h3>
+        <p>The data was last updated on 03/11/2014</p>
+        <h3>Contact details</h3>
+        <p>If you wish to contact me, please email at dcfwight@gmail.com</p>
+    </div>
     <script type="text/javascript">
     //Use D3 to load the CSV file and pass the contents of it to the draw function
     d3.csv("loans_clean.csv", function(d) {
