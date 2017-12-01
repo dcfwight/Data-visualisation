@@ -4,7 +4,7 @@
 1. Clone the entire directory to your local machine. `git clone https://github.com/dcfwight/Data-visualisation.git`
 1. Start up a local server. E.g. `$ python3 -m http.server`
 1. This should then start serving on local host, port 8000.
-1. Open your brower and navigate to [localhost:8000](localhost:8000)
+1. Open your brower and navigate to [localhost:8000](http://localhost:8000)
 
 # Summary
 - I have taken data from the Prosper Loan database. I have averaged it across occupations and across income groups.
