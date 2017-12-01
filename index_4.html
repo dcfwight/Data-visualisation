@@ -17,11 +17,11 @@
 		
 		// set the dimensions for the buttons - this influence the buttonBuffer
 		var buttonWidth = 100,
-				buttonHeight = 19,
-				buttonSpace = 1,
-				buttonX0 = (width - (2* buttonWidth) - 2),
-				buttonY0 = 2
-				buttonBuffer = (2* buttonWidth) +10;
+			buttonHeight = 19,
+			buttonSpace = 1,
+			buttonX0 = (width - (2* buttonWidth) - 2),
+			buttonY0 = 2,
+			buttonBuffer = (2* buttonWidth) +10;
 			
 		// Create percentage format variable for use in axes
 		var formatAsPercentage = d3.format("1%");
@@ -35,12 +35,13 @@
 					  "#016c59","#01cd36","#f137fb","#e267f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
 		
 		// set the colors for interactive buttons
-			var defaultColor= "#7777BB";
-			var hoverColor= "#0000ff";
-			var pressedColor= "red";
-			
+		var defaultColor= "#7777BB";
+		var hoverColor= "#0000ff";
+		var pressedColor= "red";
+		
 		
 		function draw(data) {
+			//debugger;
 			// Manipulate the data
 			// created a nested function, grouping the data by Occupation group.
 			var nested = d3.nest()
@@ -49,7 +50,7 @@
 					}
 					).sortKeys(d3.ascending)
 				.entries(data);
-		   
+			//debugger;
 			// created nestedIncome variable to average the APR across all occupations
 			// use this to create the average APR line and circles only.
 			var nestedIncome = d3.nest()
@@ -68,7 +69,7 @@
 							'N':total};
 				})   
 				.entries(data);
-			
+			debugger;
 			// create linesArray which reshapes the data into easier format to use with linedraw function
 			var linesArray = [];
 			for (i in nested){
@@ -119,7 +120,7 @@
 			uniqueOccupations.sort(d3.ascending);
 
 			// the occupations are categorical, so we need an ordinal scale for the colors.
-			var colorScale = d3.scale.ordinal()
+			var colorScale = d3.scaleOrdinal()
 				.domain(d3.extent(data, function(d){
 					return d.OccGroup;
 					}))
@@ -127,15 +128,15 @@
 	  
 			// the x axis data is categorical, so we need an ordinal scale.
 			// Change the padding if the data is too close to edges  
-			var xScale = d3.scale.ordinal()
+			var xScale = d3.scalePoint()
 				.domain(["$1-25k", "$25-50k", "$50-75k", "$75-100k", "$100k+"])
-				.rangePoints([0,(width - buttonBuffer-50)],1);
+				.range([0,(width - buttonBuffer-50)],1);
 				
 			// create the x-axis object (note - not added yet, just defined the variable)
-			var xAxis = d3.svg.axis()
+			var xAxis = d3.axisBottom()
 				.scale(xScale)
-				.tickSize(5)
-				.orient("bottom");   // this specifies the orientation of labels relative to the axis   
+				.tickSize(5);
+				//.orient("bottom");   // this specifies the orientation of labels relative to the axis   
 				
 			// Add the x-axis in it's own 'g' group.    
 			myChart.append("g")
@@ -150,7 +151,7 @@
 					.text("Income Bracket");    
 			
 			// construct the y axis scale. This is linear as it is a range of apr values.
-			var yScale = d3.scale.linear()
+			var yScale = d3.scaleLinear()
 				.domain([0,d3.max(data, function(d){
 					return d.apr;
 					})])
@@ -158,17 +159,17 @@
 				.nice();
 				
 			// create the y-axis object (note - not added yet, just defined)
-			var yAxis = d3.svg.axis()
+			var yAxis = d3.axisLeft()
 				.scale(yScale)
 				.tickSize(5)
-				.tickFormat(formatAsPercentage)
-				.orient("left"); // this specifies the orientation of labels to the axis
+				.tickFormat(formatAsPercentage);
+				//.orient("left"); // this specifies the orientation of labels to the axis
 				 
 			// function for creating the y grid lines
 			function make_y_grids() {
-				return d3.svg.axis()
+				return d3.axisLeft()
 					.scale(yScale)
-					.orient("left")
+					//.orient("left")
 					.ticks(7);
 					}
 
@@ -196,7 +197,7 @@
 			
 			
 			// create a scale for the radius of the circles
-			var rScale = d3.scale.sqrt()
+			var rScale = d3.scaleSqrt()
 				.domain([0,d3.max(data, function(d){
 					return d.N;
 					})])
@@ -343,7 +344,7 @@
 					return xScale(d.key) + margin.left;
 					})
 				.attr('cy', function(d){
-					return yScale(d.values.meanApr) + margin.top;
+					return yScale(d.value.meanApr) + margin.top;
 					})
 				.attr('r',5)
 				/*From discussing with Udacity reviewer - taken out sample sizes.
@@ -359,7 +360,7 @@
 					.style("opacity", 0.9);
 					tooltip.html("Average" + "<br>"
 								 + "Income Group: " + d.key + "<br>"
-								 + "Mean APR: " + d3.format(".1%")(d.values.meanApr))
+								 + "Mean APR: " + d3.format(".1%")(d.value.meanApr))
 					.style('font-size',"10pt")
 					.style("left", (d3.event.pageX + 5) + "px")
 					.style("top", (d3.event.pageY - 28) + "px")
@@ -503,10 +504,10 @@
 			function lineDraw(occupation_data, lineColor, lineOpacity) {
 
 				// Create variable to define pixel points of the line
-				var line = d3.svg.line()
+				var line = d3.line()
 					.x(function(d) { return xScale(d.income) + margin.left; })
-					.y(function(d) { return yScale(d.apr) +margin.top; })
-					.interpolate("cardinal");
+					.y(function(d) { return yScale(d.apr) +margin.top; });
+					//.interpolate("cardinal");
 				
 				// create the linePath for all the individual occupations
 				var linePath = d3.select('svg')
@@ -528,7 +529,7 @@
 							return line(d.values);
 							})
 						.style('opacity', lineOpacity)
-						.attr('stroke-width', lineWidth);
+						.attr('stroke-width', lineWidth = 2);
 						
 				linePath.exit().remove();
 				 }; // End of function lineDraw(occupation)
@@ -537,10 +538,10 @@
 				 // now create the linePath for the average - this stays on the screen.
 			   
 				// create slightly different line format to deal with the average data 
-				var averageLine =  d3.svg.line()
+				var averageLine =  d3.line()
 					.x(function(d) { return xScale(d.key) + margin.left; })
-					.y(function(d) { return yScale(d.values.meanApr) +margin.top; })
-					.interpolate("linear");       
+					.y(function(d) { return yScale(d.value.meanApr) +margin.top; })
+					//.curve("linear");       
 				
 				var averageLinePath = d3.select('svg')
 					.append('path')
