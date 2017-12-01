@@ -1,0 +1,919 @@
+---
+title: "Prosper Loan Data Exploratory Analysis"
+output: html_document
+author: Doug Wight
+---
+
+This is an exploratory analysis of the Prosper Loan Dataset for the DataAnalyst NanoDegree.
+
+Prosper is a peer to peer lending site.
+
+```{r, echo = FALSE}
+# set up packages and libraries - note have then commented out, to allow the
+# knitter to work
+install.packages("ggplot2", dependencies = TRUE)
+install.packages('knitr', dependencies = TRUE)
+install.packages('dplyr', dependencies = TRUE)
+install.packages('plyr', dependencies = TRUE)
+install.packages('ggthemes')
+library (ggthemes)
+
+library(ggplot2)
+library(knitr)
+library(plyr)
+library(dplyr)
+```
+
+```{r, echo = FALSE}
+# set working directory and read in Prosper Loan Data
+setwd("~/github/udacity_dand_p6/data_viz_project/project/data")
+loans_original <- read.csv("prosperLoanData.csv",header=TRUE)
+# keep original copy, in case I want to revert
+
+loans.df <- data.frame(loans_original)
+```
+
+
+```{r, echo=FALSE}
+# ListingCategory is currently a numeric field, but it should really be a category.
+# Create the correct category field. Can map it to the correct terms, if interesting.
+loans.df$ListingCategory <- factor(loans.df$ListingCategory..numeric.)
+
+```
+
+```{r, echo=FALSE}
+# create a loans_simple.df with much fewer fields, for use when importing and using in d3
+loans_simple <- data.frame(occupation = loans_original$Occupation,
+                           income = loans_original$IncomeRange,
+                           apr = loans_original$BorrowerAPR)
+
+# remove all lines where APR is 'NA'
+loans_simple <- na.omit(loans_simple)
+# this has the effect of removing 25 data points to 113,912
+```
+
+```{r,echo=FALSE}
+# remove all income levels which are 'not displayed','$0' and 'not employed'
+loans_simple <- loans_simple[loans_simple$income != "Not displayed",]
+loans_simple <- loans_simple[loans_simple$income != "$0",]
+loans_simple <- loans_simple[loans_simple$income != "Not employed",]
+# this has the effect of removing 9,143 data points to 104,769 (8% or original dataset)
+```
+
+```{r,echo=FALSE}
+# remove the empty levels
+loans_simple <- droplevels(loans_simple)
+```
+
+```{r,echo=FALSE}
+# simplify the names
+levels(loans_simple$income) <- list("$1-25k" = "$1-24,999", "$100k+" = "$100,000+", "$25-50k" = "$25,000-49,999", "$50-75k" = "$50,000-74,999", "$75-100k" = "$75,000-99,999")
+```
+
+```{r,echo=FALSE}
+# rearrange the order of the income levels to logical ordering
+loans_simple$income <- factor(loans_simple$income, levels(loans_simple$income)[c(1,3,4,5,2)]) 
+
+# DO NOT USE the following line - this was where I was going wrong - this just renames the titles!
+#levels(loans_simple$income) <- c("$1-25k","$25-50k","$50-75k","$75-100k","$100k+")
+
+```
+
+```{r, echo = FALSE}
+# adjust the levels (names) of IncomeRange to more user friendly
+levels(loans.df$IncomeRange) <- list("$0k" = "$0", "$1-25k" = "$1-24,999", "$100k+" = "$100,000+", "$25-50k" = "$25,000-49,999", "$50-75k" = "$50,000-74,999", "$75-100k" = "$75,000-99,999", "Not displayed" = "Not displayed", "Not employed" = "Not employed")
+
+# then arrange the factor levels into more logical order
+# re-order the factors to a more sensible grouping.
+loans.df$IncomeRange = factor(loans.df$IncomeRange,levels(loans.df$IncomeRange)[c(8,1,2,4,5,6,3,7)])
+```
+
+## Amalgamate some of the occupations
+```{r, echo= FALSE}
+# create a new field called OccGroup
+loans_simple$OccGroup <- loans_simple$occupation
+# run code to see summary of levels
+levels(loans_simple$OccGroup)
+# start grouping levels, from bottom up
+levels(loans_simple$OccGroup)[63:66] <- "Tradesman"
+levels(loans_simple$OccGroup)[61:62] <- "Teaching"
+levels(loans_simple$OccGroup)[54:60] <- "Student"
+levels(loans_simple$OccGroup)[49:50] <- "Sales"
+levels(loans_simple$OccGroup)[47] <- "Clergy/Religious"
+levels(loans_simple$OccGroup)[40] <- "Police Officer"
+levels(loans_simple$OccGroup) [39] <- "Pilot"
+levels(loans_simple$OccGroup)[34:36] <- "Nursing"
+levels(loans_simple$OccGroup)[32:33] <- "Military"
+levels(loans_simple$OccGroup)[25] <- "Food Service Mgmt"
+levels(loans_simple$OccGroup)[18:20] <- "Engineer"
+levels(loans_simple$OccGroup)[16:17] <- "Doctor/Dentist"
+levels(loans_simple$OccGroup)[14] <- "Programmer"
+levels(loans_simple$OccGroup)[12] <- "Clergy/Religious"
+levels(loans_simple$OccGroup)[3] <- "Admin Assistant"
+levels(loans_simple$OccGroup)[2] <- "Accountant"
+levels(loans_simple$OccGroup)[1] <- "None provided"
+levels(loans_simple$OccGroup)
+```
+
+## Amalgamate some of the occupations
+```{r, echo= FALSE}
+# create a new field called OccGroup
+loans.df$OccGroup <- loans.df$Occupation
+# run code to see summary of levels
+levels(loans.df$OccGroup)
+# start grouping levels, from bottom up
+levels(loans.df$OccGroup)[63:66] <- "Tradesman"
+levels(loans.df$OccGroup)[54:60] <- "Student"
+levels(loans.df$OccGroup)[49:50] <- "Sales"
+levels(loans.df$OccGroup)[49:50] <- "Sales"
+levels(loans.df$OccGroup) [39] <- "Pilot"
+levels(loans.df$OccGroup)[40] <- "Police Officer"
+levels(loans.df$OccGroup)[34:36] <- "Nursing"
+levels(loans.df$OccGroup)[32:33] <- "Military"
+levels(loans.df$OccGroup)[18:20] <- "Engineer"
+levels(loans.df$OccGroup)[3] <- "Admin Assistant"
+levels(loans.df$OccGroup)[2] <- "Accountant"
+levels(loans.df$OccGroup)[1] <- "None provided"
+```
+
+# first install statistics package - Rmisc, to allow to use summarySE
+```{r, echo= FALSE}
+install.packages("Rmisc")
+library(Rmisc)
+```  
+
+## Create a new dataframe with the means for BorrowerAPR grouped by IncomeRange and Occupation
+
+```{r, echo= FALSE}
+AprMean <- summarySE(loans.df, measurevar = "BorrowerAPR",
+                     groupvars = c("IncomeRange","OccGroup"))
+```
+
+```{r,echo=FALSE}
+AprMean2 <- summarySE(loans_simple, measurevar = "apr",
+                      groupvars = c("income","OccGroup"))
+```
+
+# Remove all rows where the number of entries < limit (say 5). This makes the average more meaningful and less volatile at the expense of data.
+```{r, echo= FALSE}
+AprMeanReduced <- subset(AprMean, N>=10)
+```
+
+```{r, echo= FALSE}
+AprMeanReduced2 <- subset(AprMean2, N>=8)
+```
+
+
+```{r,echo=FALSE}
+# tidy up loans_simple by removing occupation field
+loans_simple$occupation <- NULL
+# write it to a csv file
+write.csv(loans_simple, file = "loans_simple.csv")
+```
+
+```{r, echo=FALSE}
+# add an index column - will use this to uniquely identify data.
+AprMeanReduced2$id = seq.int(nrow(AprMeanReduced2))
+```
+
+```{r,echo=FALSE}
+# re-arrange the columns and drop the sd, se, and ci data (not doing boxplots)
+AprMeanReduced2 <- AprMeanReduced2[,c("id","OccGroup","income","apr","N")] 
+```
+
+```{r, echo= FALSE}
+write.csv(AprMeanReduced2, file = "../loans_clean.csv")
+```
+
+### Beyond this point was the initial preparatory data analysis - I did this first, but then moved to the bottom, so that I could quickly make changes to the data preparation, without wading through the graph coding.
+
+###Histogram of Income Ranges
+```{r, echo = FALSE}
+ggplot(aes(x=income),
+       data = loans_simple)+
+  geom_bar(fill="steelblue") +
+  scale_x_discrete() +
+  xlab('Income Range') +
+  ylab('Number')
+```
+
+###Histogram of Borrower Rates
+```{r, echo = FALSE}
+ggplot(aes(x=BorrowerRate),
+       data = loans.df)+
+  geom_histogram(binwidth = 0.02,
+                 fill='darkgreen') +
+  scale_x_continuous() +
+  xlab('Borrower rate') +
+  ylab('Number')
+```
+
+###Histogram of Borrower APR
+```{r, echo = FALSE}
+ggplot(aes(x=BorrowerAPR),
+       data = loans.df)+
+  geom_histogram(fill='darkgreen',
+                 binwidth=0.02) +
+  scale_x_continuous() +
+  xlab('BorrowerAPR') +
+  ylab('Number')
+```
+
+```{r, echo=FALSE}
+# turn listingCategory from integer into factor
+loans.df$listingCategory <- as.factor(loans.df$ListingCategory..numeric.)
+
+```
+
+###Histogram of Loan types
+```{r, echo = FALSE}
+ggplot(aes(x=ListingCategory),
+       data = loans.df)+
+  geom_bar(fill='darkgreen') +
+  scale_x_discrete() +
+  xlab('Listing type') +
+  ylab('Number')
+```
+
+
+###Scatter of Borrower APR vs Borrower Rate
+as expected, very strong correlation between the two
+```{r, echo = FALSE}
+ggplot(aes(x= BorrowerAPR,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point() +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('BorrowerAPR') +
+  ylab('BorrowerRate')
+```
+
+##Boxplots for listing categories
+```{r, echo = FALSE}
+ggplot(aes(x= ListingCategory,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Listing Category') +
+  ylab('BorrowerRate')
+```
+There does appear to be some disparity - Categories 0 and 4 are lower than average - these are 'not available' and 'personal loan'. NOTE, however there are significant outliers in the 'not available category. 10 and 13 seem higher than average. They are cosmetic procedure and household expenses
+
+###Scatter of Borrower APR vs Credit Rating - UPPER
+```{r, echo = FALSE}
+ggplot(aes(x= CreditScoreRangeUpper,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('Upper range of credit score') +
+  ylab('BorrowerRate')
+```
+as expected, very strong negative correlation between the two (good credit score = lower interest rate)
+
+###Scatter of Borrower APR vs Credit Rating - LOWER
+```{r, echo = FALSE}
+ggplot(aes(x= CreditScoreRangeLower,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('Lower range of credit score') +
+  ylab('BorrowerRate')
+```
+Same graph, effectively
+
+###Scatter of Borrower APR vs Occupation - scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= Occupation,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Occupation') +
+  ylab('BorrowerRate')
+```
+not really helpful - run a boxplot instead
+
+##Boxplots for Occupation
+```{r, echo = FALSE}
+ggplot(aes(x= Occupation,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Occupation') +
+  ylab('Borrower APR')
+```
+
+###Scatter of Borrower APR vs Term - scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= Term,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Term') +
+  ylab('BorrowerRate')
+```
+not enough different data to be meaningful.
+
+##Boxplots for Employment Status
+```{r, echo = FALSE}
+ggplot(aes(x= EmploymentStatus,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Employment Status') +
+  ylab('Borrower APR')
+```
+some interesting insights - unsurprisingly not employed has the highest APR, but no real difference between part time and full time. Have a look at faceting it by occupation?
+
+##Boxplots for Employment Status faceted by occupation
+```{r, echo = FALSE}
+ggplot(aes(x= EmploymentStatus,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Employment Status') +
+  ylab('Borrower APR') +
+  facet_wrap(~Occupation)
+```
+A lot of different occupations - quite hard to discern trends. Amalgamate professions?
+
+###Scatter of Borrower APR vs Employment duration- scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= EmploymentStatusDuration,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Employment Status Duration') +
+  ylab('BorrowerRate')
+```
+
+
+
+###Scatter of Borrower APR vs Income Range- scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= income,
+           y= apr),
+       data = loans_simple)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Income range') +
+  ylab('BorrowerRate')
+```
+
+
+##Boxplots for Income Range
+```{r, echo = FALSE}
+ggplot(aes(x= IncomeRange,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Income Range') +
+  ylab('Borrower APR')
+```
+
+
+###Scatter of Borrower APR vs Stated Monthly Income - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= StatedMonthlyIncome,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_continuous() +
+  scale_y_continuous()+
+  xlab('Stated Monthly Income') +
+  ylab('BorrowerRate')
+```
+heavily influenced by outliers. Have a quick look at the histogram for stated monthly income
+```{r, echo = FALSE}
+summary(loans.df$StatedMonthlyIncome)
+qplot(loans.df$StatedMonthlyIncome)
+```
+rerun, with limit to the data
+
+###Scatter of Borrower APR vs Stated Monthly Income - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= StatedMonthlyIncome,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_continuous(limits = c(0,10000)) +
+  scale_y_continuous()+
+  xlab('Stated Monthly Income') +
+  ylab('BorrowerRate')
+```
+
+###Scatter of Borrower APR vs ProsperScore- scatter chart with jitter
+```{r, echo = FALSE}
+ggplot(aes(x= ProsperScore,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(position = "jitter",
+             alpha = 1/50,
+             col='black') +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Prosper Score') +
+  ylab('BorrowerRate')
+```
+
+##Boxplots for Prosper Rating
+```{r, echo = FALSE}
+loans.df$Prosp_rating_set <-factor(loans.df$ProsperRating..Alpha.,
+                                levels = c("AA","A","B","C","D","E","HR",""))
+# this just manually sets the levels, to stop ordering on alphabetical (A before AA)
+ggplot(aes(x= Prosp_rating_set,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Prosper Rating') +
+  ylab('Borrower APR')
+```
+pretty strong correlation, but not unusual.
+
+##Boxplots for Borrower States
+```{r, echo = FALSE}
+
+ggplot(aes(x= BorrowerState,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Borrower State') +
+  ylab('Borrower APR')
+```
+IA (Iowa) and ME (Maine) are below average
+
+###Scatter of Borrower APR vs Debt to income ratio - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= DebtToIncomeRatio,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(alpha = 1/50,
+             col='black') +
+  scale_x_log10() +
+  scale_y_continuous()+
+  xlab('Debt to Income ratio') +
+  ylab('BorrowerRate')
+```
+this graph is affected by outliers at 10x+ (limited to 10x)
+
+###Scatter of Borrower APR vs Total Prosper Paments Billed - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= TotalProsperPaymentsBilled,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(alpha = 1/25,
+             col='black') +
+  scale_x_log10() +
+  scale_y_continuous()+
+  xlab('Total on time Prosper Payments Billed') +
+  ylab('BorrowerRate')
+```
+no real correlcation
+
+##Boxplots for Income verifiable
+```{r, echo = FALSE}
+
+ggplot(aes(x= IncomeVerifiable,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Income Verifiable') +
+  ylab('Borrower APR')
+```
+
+##Boxplots for is borrower homeowner
+```{r, echo = FALSE}
+
+ggplot(aes(x= IsBorrowerHomeowner,
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Is Borrower Homeowner') +
+  ylab('Borrower APR')
+```
+
+###Scatter of Borrower APR vs Inquiries last 6 months - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= InquiriesLast6Months,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_continuous(limits = c(0,10)) +
+  scale_y_continuous()+
+  xlab('Inquiries Last 6 months') +
+  ylab('BorrowerRate')
+```
+
+###Scatter of Borrower APR vs Total Prosper Loans - scatter chart
+```{r, echo = FALSE}
+ggplot(aes(x= TotalProsperLoans,
+           y= BorrowerRate),
+       data = loans.df)+
+  geom_point(alpha = 1/50,
+             col='black',
+             position = "jitter") +
+  scale_x_discrete(limits = c(0,5)) +
+  scale_y_continuous()+
+  xlab('Total Prosper Loans') +
+  ylab('BorrowerRate')
+```
+
+##Boxplots for Total Prosper Loans
+```{r, echo = FALSE}
+
+ggplot(aes(x= factor(TotalProsperLoans),
+           y= BorrowerAPR),
+       data = loans.df)+
+  geom_boxplot() +
+  scale_x_discrete() +
+  scale_y_continuous()+
+  xlab('Total Prosper Loans') +
+  ylab('Borrower APR')
+```
+
+Quite an interesting boxplot - take out more loans. But NOTE, the number of those with 7 loans is very small.
+
+##Look at Bar-chart for borrower rate by occupation, but for the £25-50k income factor ONLY. Did this to show how to subset
+```{r, echo= FALSE}
+ggplot(aes(x = Occupation),
+       data =  subset(loans.df, IncomeRange =="$25-50k")) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_economist()
+```
+
+##Look at Bar-chart for borrower rate by Occupation, for ALL incomes.
+```{r, echo= FALSE}
+ggplot(aes(x = Occupation),
+       data =  loans.df) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_economist()
+```
+
+## Now Look at Bar-chart for borrower rate by Occupation, for ALL incomes.
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroup),
+       data =  loans.df) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_economist()
+```
+
+## Create new fields for Occupation, sorted by Frequency, ascending / descending
+note - I learned how to do this in-line with the graph code - details further down.
+```{r, echo= FALSE}
+loans.df$OccGroupDesc <- factor(loans.df$OccGroup, levels = 
+                               names(sort(table(loans.df$OccGroup), decreasing = FALSE)))
+# this creates a new field. Table gets the stats on OccGroup, Sort sorts it, names
+# gets the names field
+loans.df$OccGroupAsc <- factor(loans.df$OccGroup, levels = 
+                               names(sort(table(loans.df$OccGroup), decreasing = TRUE)))
+
+
+```
+
+## Barchart for Borrowers by Occupation - biggest first
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupDesc),
+       data =  loans.df) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_economist()
+```
+
+## Barchart for Borrowers by Occupation - biggest last
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc),
+       data =  loans.df) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation')+
+  theme_bw()
+```
+
+## Barchart for Borrowers by Occupation - biggest last, subset income > $75-100k
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc),
+       data =  subset(loans.df, IncomeRange =="$75-100k")) +
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $100k')+
+  theme_light()
+```
+note how the ordering is lost again. To re-set each time, use the 
+following:
+
+## Barchart for Borrowers by Occupation - biggest last, subset income  in 2 buckets, $75-100k and > $100k.
+
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc),
+       data =  subset(
+         loans.df, IncomeRange %in% c("$75-100k","$100k+")
+         )
+       )+
+  geom_bar(stat = "count") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $100k') +
+  theme_excel()
+```
+
+## Barchart for Borrowers by Occupation - biggest last, subset income  into, $75-100k, and order AS WE GO
+
+```{r, echo= FALSE}
+ggplot(aes(x = factor(OccGroup,
+                      levels = names(
+                        sort(
+                          table(OccGroup)
+                        )
+                      ))),
+       data =  subset(
+         loans.df, IncomeRange == "$75-100k"
+         )
+       )+
+  geom_bar(stat = "count",
+           color = "black",
+           fill = "red") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $100k') +
+  theme_light()
+```
+
+## Combine the two Barchart for Borrowers by Occupation - biggest last, subset income  into, $75-100k and $100k+, and order AS WE GO
+
+```{r, echo= FALSE}
+ggplot(aes(x = factor(OccGroup,
+                      levels = names(
+                        sort(
+                          table(OccGroup)
+                        ,decreasing =TRUE)
+                      ))),
+       data =  subset(
+         loans.df, IncomeRange %in% c("$75-100k","$100k+")
+         )
+       )+
+  geom_bar(stat = "count",
+           color = "grey",
+           fill = "blue") +
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $75k') +
+  theme_light()
+```
+
+## Create a boxplot of the average borrowing rate for each profession at a specific income level (e.g. $50 - 75k)
+
+```{r, echo= FALSE}
+ggplot(aes(x = OccGroupAsc,
+           y = BorrowerAPR),
+       data =  subset(
+         loans.df, IncomeRange == "$50-75k"
+         )
+       )+
+  geom_boxplot()
+  coord_flip() +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Number of borrowers by Occupation, subset income > $75k') +
+  theme_light()
+```
+
+
+## Create a linechart of the average BorrowerAPR for a specific profession, say "analsyt", across the different IncomeRanges
+
+
+
+## Create line graph of mean BorrowerAPR against IncomeRange - Note the group has been forced together by 'group = 1'
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR),
+       data =  subset(AprMean, OccGroup == "Analyst")
+         ) +
+  geom_line(group = 1) +
+  ylab('Mean APR') +
+  xlab('Occupation') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+## Can't see what's going wrong - why I can't create a line graph from the data - created a new dataframe, with just "Analyst" and "Professional" data
+```{r, echo= FALSE}
+AprMeanAnalyst <- subset(AprMean, OccGroup %in% c(
+  "Analyst","Professional"))
+```
+
+# now try and make a line graph out of this new dataframe - the answer is that the lines don't know automatically which GROUP they belong to - below I force it to being group = 1. But will generalise it below
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR),
+       data =  AprMeanAnalyst
+         ) +
+  geom_point() +
+  geom_line(group = AprMeanAnalyst$OccGroup) +
+  ylab('count') +
+  xlab('Occupation') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# now try and group each line by occupation, for a multi-line graph
+```{r, echo= FALSE}
+ggplot(data = AprMean,
+       aes(x = IncomeRange,
+           y = BorrowerAPR)
+       ) +
+  geom_point() +
+  geom_line(group=AprMean$OccGroup) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# now subset it, so that it is only positive incomes and group each line by occupation, for a multi-line graph
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR),
+       data =  subset(AprMean, IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))
+         ) +
+  geom_point() +
+  geom_line(group=subset(AprMean, IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))$OccGroup) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# Still can't get it to work. The problem is that I cannot colour the lines so that they are different according to each occupation.
+# The answer is to use group in the aes of ggplot.
+http://www.cookbook-r.com/Graphs/Shapes_and_line_types/
+
+```{r, echo= FALSE}
+# first make new dataframe with the data we want
+AprMeanIncomes <- subset(AprMean,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))  
+```
+
+```{r,echo=FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  AprMeanIncomes)+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# now try and run the graph, with the coding to subset in line
+```{r, echo= FALSE}
+# first make new dataframe with the data we want
+
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  subset(AprMean,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+")))+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# Run the same code, with AprMeanReduced - this should remove the outliers of averages based on low sample numbers
+```{r, echo= FALSE}
+# first make new dataframe with the data we want
+
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  subset(AprMeanReduced,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+")))+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light()
+```
+
+# quite a crowded graph - remove the legend for now
+```{r, echo= FALSE}
+ggplot(aes(x = IncomeRange,
+           y = BorrowerAPR,
+           group = OccGroup),
+       data =  subset(AprMeanReduced,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+")))+
+  geom_point() +
+  geom_line(aes(colour = OccGroup)) +
+  ylab('Borrower APR') +
+  xlab('Income Range') +
+  ggtitle('Mean BorrowerAPR') +
+  theme_light() +
+  theme(legend.position = "none")
+```
+
+# Write the created datatable to CSV for use with d3
+```{r, echo= FALSE}
+# create clean data table, without needing to sort
+AprMeanReducedFinal <- subset(AprMeanReduced,IncomeRange %in%
+                        c("$1-25k","$25-50k","$50-75k","$75-100k",
+                          "$100k+"))
+write.csv(AprMeanReducedFinal, file = "apr_data.csv")
+```
+
+
+## following the tooth growth example (google it....)
+```{r, echo= FALSE}
+tg <- ToothGrowth
+  # summarySE provides the standard deviation, standard error of the mean, and a (default 95%) confidence interval
+tgc <- summarySE(tg, measurevar="len", groupvars=c("supp","dose"))
+```
+
+## run the graph for tooth growth
+```{r, echo = FALSE}
+ggplot(tgc, aes(x=dose, y=len,color = supp)) + 
+    geom_errorbar(aes(ymin=len-se, ymax=len+se), width=.1) +
+    geom_line() +
+    geom_point()
+```
