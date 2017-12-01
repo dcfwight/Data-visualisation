@@ -1,3 +1,11 @@
+# Data Visualization project
+
+## Installation
+1. Clone the entire directory to your local machine. `git clone https://github.com/dcfwight/Data-visualisation.git`
+1. Start up a local server. E.g. `$ python3 -m http.server`
+1. This should then start serving on local host, port 8000.
+1. Open your brower and navigate to [localhost:8000](localhost:8000)
+
 # Summary
 - I have taken data from the Prosper Loan database. I have averaged it across occupations and across income groups.
 - I want the data to show the different average loan rates (APRs), across each different occupation. This should allow the user to compare whether, for example, a bus driver has a different APR to a pilot, even if they have the same income level.

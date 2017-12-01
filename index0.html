@@ -4,7 +4,7 @@
 <head>
     <title>Prosper Loan Analysis</title>
     <meta charset="utf-8">
-    <script src="d3.min.js" charset="utf-8"></script>
+    <script src="js/d3.min.js" charset="utf-8"></script>
     <link rel="stylesheet" type="text/css" href="css/style.css">
     
     <script type="text/javascript">
@@ -32,7 +32,7 @@
                       "#006d2c","#11441b","#bba7fb","#ecedb0","#d0d1e6","#a6bddb","#67a9cf","#3690c0","#02818a",
                       "#016c59","#01cd36","#f137fb","#e267f2","#d0d1e6","#a6bddb","#74a9cf","#3690c0","#0570b0"];
         
-        var duration = 1000 // duration time for transitions
+        var duration = 1000; // duration time for transitions
         
         
         function draw(data) {
@@ -140,7 +140,7 @@
                         .attr("class", "legend")
                         .attr("transform", function(d, i) {
                             return "translate(0," + i * 10 +")";
-                            })
+                            });
                 
                 // draw legend colored rectangles - note this could have been chained to the above
                 legend.append("rect")
@@ -444,7 +444,11 @@
     <script type="text/javascript">
     //Use D3 to load the CSV file and pass the contents of it to the draw function
     d3.csv("data/loans_clean.csv", draw);
-    
+    d3.csv("data/loans_clean.csv", function(data){
+		for (var i=0; i< data.length; i++) {
+		console.log(data[i]);
+	}
+		});
     </script>
 </body>
 </html>
