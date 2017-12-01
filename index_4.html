@@ -4,8 +4,8 @@
 <head>
 	<title>Prosper Loan Analysis</title>
 	<meta charset="utf-8">
-	<script src="d3.min.js" charset="utf-8"></script>
-	<link rel="stylesheet" type="text/css" href="style2.css">
+	<script src="js/d3.min.js" charset="utf-8"></script>
+	<link rel="css/stylesheet" type="text/css" href="style2.css">
 	
 	<script type="text/javascript">
 		
@@ -643,7 +643,7 @@
 	</div>
 	<script type="text/javascript">
 	//Use D3 to load the CSV file and pass the contents of it to the draw function
-	d3.csv("loans_clean.csv", function(d) {
+	d3.csv("data/loans_clean.csv", function(d) {
 		d['N'] = +d['N'];
 		return d},
 		   draw);
