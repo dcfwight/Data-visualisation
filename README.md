@@ -1,5 +1,8 @@
 # Data Visualization project
 
+## To-do items
+- Need to go in and update all the d3 code for the new version 4. Will not currently work with old syntax.
+
 ## Installation
 1. Clone the entire directory to your local machine. `git clone https://github.com/dcfwight/Data-visualisation.git`
 1. Start up a local server. E.g. `$ python3 -m http.server`
