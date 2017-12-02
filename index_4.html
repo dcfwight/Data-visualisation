@@ -39,42 +39,37 @@
 		var hoverColor= "#0000ff";
 		var pressedColor= "red";
 		
-		
 		function draw(data) {
 			//debugger;
 			// Manipulate the data
 			// created a nested function, grouping the data by Occupation group.
 			var nested = d3.nest()
-				.key(function(d){
-					return d.OccGroup;
-					}
-					).sortKeys(d3.ascending)
+				.key(function(d){ return d.OccGroup; })
+				.sortKeys(d3.ascending)
 				.entries(data);
 			//debugger;
 			// created nestedIncome variable to average the APR across all occupations
 			// use this to create the average APR line and circles only.
 			var nestedIncome = d3.nest()
-				.key(function(d){
-					return d.income;
-					})
+				.key(function(d){ return d.income; })
 				.rollup(function(leaves){
 					var meanApr = d3.mean(leaves, function(d) {
-					return d['apr'];
+					return d.apr;
 					});
 					
 					var total = d3.sum(leaves, function(d){
-						return d['N'];
+						return d.N;
 						});
 					return {"meanApr": meanApr,
 							'N':total};
 				})   
 				.entries(data);
-			debugger;
+
 			// create linesArray which reshapes the data into easier format to use with linedraw function
 			var linesArray = [];
-			for (i in nested){
+			for (var i=0; i < nested.length; i++) {
 				pathInfo = [];
-				for (j in nested[i].values){
+				for (var j=0; j< nested[i].values.length; j++) {
 					pathInfo.push({'id': nested[i].values[j].id,
 									'apr': nested[i].values[j].apr,
 									'income': nested[i].values[j].income});
@@ -110,9 +105,7 @@
 			
 			// Create a set of unique occupations called 'occupations' by adding to it.
 			var occupations = d3.set();
-			data.forEach(function(d){
-				occupations.add(d["OccGroup"])
-						   });
+			data.forEach(function(d){ occupations.add(d.OccGroup); });
 			
 			// then create an array of just the values in this set - makes the rest of the code much easier
 			var uniqueOccupations = occupations.values();
@@ -358,9 +351,9 @@
 					tooltip.transition()
 					.duration(50)
 					.style("opacity", 0.9);
-					tooltip.html("Average" + "<br>"
-								 + "Income Group: " + d.key + "<br>"
-								 + "Mean APR: " + d3.format(".1%")(d.value.meanApr))
+					tooltip.html("Average" + "<br>" +
+								"Income Group: " + d.key + "<br>" +
+								"Mean APR: " + d3.format(".1%")(d.value.meanApr))
 					.style('font-size',"10pt")
 					.style("left", (d3.event.pageX + 5) + "px")
 					.style("top", (d3.event.pageY - 28) + "px")
@@ -437,7 +430,7 @@
 				// bind the data to the circles and enter them - using data, not nested.
 				var circles = svg.selectAll('.plottedCircle')
 					.data(occupation_data, function(d){
-						return d['id'];
+						return d.id;
 						});
 					
 				circles.exit()
@@ -464,11 +457,11 @@
 						.on("mouseover", function(d) {
 							tooltip.transition()
 							.duration(200)
-							.style("opacity", .9);
-							tooltip.html(d.OccGroup + "<br>"
-										 + "Income Group: " + d.income + "<br>"
-										 + "Mean APR: " + d3.format(".1%")(d.apr) +"<br>"
-										 + "Sample size: " + d3.format("0,000")(d.N))
+							.style("opacity", 0.9);
+							tooltip.html(d.OccGroup + "<br>" +
+									"Income Group: " + d.income + "<br>" +
+									"Mean APR: " + d3.format(".1%")(d.apr) +"<br>" +
+									"Sample size: " + d3.format("0,000")(d.N))
 								.style('font-size',"10pt")
 								.style("left", (d3.event.pageX + 5) + "px")
 								.style("top", (d3.event.pageY - 28) + "px")
@@ -532,15 +525,15 @@
 						.attr('stroke-width', lineWidth = 2);
 						
 				linePath.exit().remove();
-				 }; // End of function lineDraw(occupation)
+				} // End of function lineDraw(occupation)
 			
 			function lineDrawAverage(averagedata) {
 				 // now create the linePath for the average - this stays on the screen.
-			   
+				debugger;
 				// create slightly different line format to deal with the average data 
 				var averageLine =  d3.line()
 					.x(function(d) { return xScale(d.key) + margin.left; })
-					.y(function(d) { return yScale(d.value.meanApr) +margin.top; })
+					.y(function(d) { return yScale(d.value.meanApr) +margin.top; });
 					//.curve("linear");       
 				
 				var averageLinePath = d3.select('svg')
@@ -579,7 +572,7 @@
 		function animationLoop() {
 		// to loop through all occupations, drawing circles and points:   
 		
-			occup_idx = 0
+			var occup_idx = 0;
 			
 			var occupation_interval = setInterval(function(){
 				update(uniqueOccupations[occup_idx]);
@@ -644,12 +637,10 @@
 	</div>
 	<script type="text/javascript">
 	//Use D3 to load the CSV file and pass the contents of it to the draw function
-	d3.csv("data/loans_clean.csv", function(d) {
-		d['N'] = +d['N'];
-		return d},
-		   draw);
-	
-	
-	</script>
+d3.csv("data/loans_clean.csv", function(d) {
+	d.N = +d.N;
+	return d;
+},
+	draw);</script>
 </body>
 </html>
