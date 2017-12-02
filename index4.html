@@ -512,16 +512,18 @@
 				linePath.enter()
 					.append('g')
 						.attr('class','occupLine')
-						.style('stroke', lineColor);   
-				
+
 				linePath.exit().remove();
 				
 				linePath.append('path')
-						.attr('class','line occupPath')
+						//.attr('class','line occupPath')
+						.attr('class', 'line')
 						.attr('d', function(d){
 							return line(d.values);
 							})
-						.style('opacity', lineOpacity)
+						.style('opacity', 0.5)
+						.attr('stroke', lineColor)
+						.attr('fill', 'none')
 						.attr('stroke-width', lineWidth = 2);
 						
 				linePath.exit().remove();
@@ -637,10 +639,11 @@
 	</div>
 	<script type="text/javascript">
 	//Use D3 to load the CSV file and pass the contents of it to the draw function
-d3.csv("data/loans_clean.csv", function(d) {
-	d.N = +d.N;
-	return d;
-},
-	draw);</script>
+		d3.csv("data/loans_clean.csv", function(d) {
+			d.N = +d.N;
+			return d;
+		},
+		draw);
+	</script>
 </body>
 </html>
