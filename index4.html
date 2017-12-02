@@ -156,15 +156,8 @@
 				.scale(yScale)
 				.tickSize(5)
 				.tickFormat(formatAsPercentage);
-				//.orient("left"); // this specifies the orientation of labels to the axis
-				 
-			// function for creating the y grid lines
-			function make_y_grids() {
-				return d3.axisLeft()
-					.scale(yScale)
-					//.orient("left")
-					.ticks(7);
-					}
+
+			
 
 			// Add the y-axis in it's own 'g' group.
 			myChart.append("g")
@@ -180,14 +173,17 @@
 					.style('fill','black')
 					.text('Average Borrower APR');           
 			
-			// Draw the y Grid lines
-			myChart.append("g")			
-				.attr("class", "grid")
-				.call(make_y_grids()
+			// create the y grid lines
+			var y_grids = d3.axisLeft()
+				.scale(yScale)
+				.ticks(7)
 				.tickSize(buttonBuffer-width, 0, 0)
-				.tickFormat("")
-			);
+				.tickFormat("");
 			
+			// Draw the y Grid lines
+			myChart.append("g")
+				.attr("class", "grid")
+				.call(y_grids);
 			
 			// create a scale for the radius of the circles
 			var rScale = d3.scaleSqrt()
@@ -200,7 +196,7 @@
 			var animateButton = svg.append('g')
 				.attr('class', 'animateButton')
 				.style('cursor','pointer')
-				.on('click', function(d){
+				.on('click', function(){
 					animationLoop();
 					svg.selectAll('.buttonRect')
 						.attr('fill',defaultColor);
@@ -511,7 +507,7 @@
 					
 				linePath.enter()
 					.append('g')
-						.attr('class','occupLine')
+						.attr('class','occupLine');
 
 				linePath.exit().remove();
 				
@@ -599,7 +595,7 @@
 		};// END of function draw(data
 		
 		  
-	  </script>
+	</script>
 </head>
 <body>
 	<div id="intro">
