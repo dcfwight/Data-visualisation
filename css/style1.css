@@ -1,30 +1,30 @@
-h1,h2,h3{
-    text-align: center;
-    }
+h1,h2,h3 {
+	text-align: left;
+}
 
 h1 {
-    font-size: 40px;
-    color: black;    
-    }
+	font-size: 40px;
+	color: black;
+}
 
 circle {
-        stroke: none;
-      }
+	stroke: none;
+}
 
 div {
-    width: 800px;
+	width: 800px;
 }
-      
+
 .axis path,
 .axis line {
-    fill: none;
-    stroke  : black;
-    shape-rendering: crispEdges;        
+	fill: none;
+	stroke: black;
+	shape-rendering: crispEdges;
 }
 
 .axis text {
-    font-family: sans-serif;
-    font-size: 12px;
+	font-family: sans-serif;
+	font-size: 12px;
 }
 
 .averageCircle {
@@ -38,42 +38,43 @@ div {
 	fill: none;
 }
 
-.buttonRect{
-    rx: 3;
-    ry: 3;
+.buttonRect {
+	rx: 3;
+	ry: 3;
 }
 
-.buttonText{
-    font-family: sans-serif;
-    dominant-baseline: central;
-    text-anchor: left; 
+.buttonText {
+	font-family: sans-serif;
+	dominant-baseline: central;
+	text-anchor: left;
 }
 
 .grid .tick {
-    stroke: lightgrey;
-    stroke-opacity: 0.7;
-    shape-rendering: crispEdges;
+	stroke: lightgrey;
+	stroke-opacity: 0.7;
+	shape-rendering: crispEdges;
 }
+
 .grid path {
-          stroke-width: 0;
+	stroke-width: 0;
 }
 
-.line {
-  fill: none;
-  stroke-width: 1.5px;
+.linePath {
+	fill: none;
+	stroke-width: 1.5px;
 }
 
-.occupTitle{
-    font-size: 20px;
-    text-anchor: middle;
+.occupTitle {
+	font-size: 20px;
+	text-anchor: middle;
 }
 
 .tooltip {
-  position: absolute;
-  width: 400px;
-  height: 28px;
-  padding: 8px;
-  font: 16px sans serif;
-  text-align: left;
-  pointer-events: none;
+	position: absolute;
+	width: 180px;
+	height: 60px;
+	padding: 8px;
+	font: 16px sans serif;
+	text-align: left;
+	pointer-events: none;
 }
