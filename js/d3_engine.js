@@ -194,7 +194,7 @@ function draw(data) {
 			lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
 			d3.selectAll(".plottedCircle")
 				.style('opacity', 0);
-			d3.selectAll('.linePath')
+			d3.selectAll('.occupPath')
 				.attr('stroke-width', 1.5)
 				.style('opacity', 0.15);
 			d3.selectAll('.buttonRect')
@@ -422,7 +422,7 @@ function draw(data) {
 			.selectAll('.occupLine')
 			.data(occupation_data, function(d) {
 				return d.key;
-		});
+			});
 	
 		linePath.enter()
 			.append('g')
@@ -431,11 +431,10 @@ function draw(data) {
 		linePath.exit().remove();
 	
 		linePath.append('path')
-		//.attr('class','line occupPath')
-		.attr('class', 'linePath')
+			.attr('class','line occupPath')
 			.attr('d', function(d) {
 				return line(d.values);
-			})
+				})
 			.style('opacity', lineOpacity)
 			.attr('stroke', lineColor)
 			.attr('stroke-width', lineWidth = 1.5);
@@ -482,7 +481,6 @@ function draw(data) {
 		plot_points(occup_points_data, circleColor = 'red', circleOpacity = 1); // pass those points to the plot_points function
 	
 		lineDraw(occup_line_data, lineColor = 'red', lineOpacity = 1, lineWidth = 3); // pass those points to the lineDraw function
-		debugger;
 		
 		lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15, lineWidth = 1.5);
 	}
@@ -507,7 +505,7 @@ function draw(data) {
 	
 				lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
 				// next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
-				d3.selectAll('.linePath')
+				d3.selectAll('.occupPath')
 					.style('opacity', 0.15);
 				
 				d3.selectAll('.plottedCircle')
@@ -518,10 +516,8 @@ function draw(data) {
 			}
 		}, 75);
 	} // END of function animationLoop
-
-} // END of function draw(data
-
-function removeLines() {
+	
+	function removeLines() {
 	// this will remove all the occupLine lines
 	var svg = d3.select('svg');
 	
@@ -529,4 +525,6 @@ function removeLines() {
 		.data([])
 		.exit()
 		.remove();
-}
+	}
+} // END of function draw(data
+

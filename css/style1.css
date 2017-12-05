@@ -82,9 +82,17 @@ div {
 	fill: black;
 }
 
-.linePath {
+.line {
+	fill: none;
+}
+
+.occupPath {
 	fill: none;
 	stroke-width: 1.5px;
+}
+
+.occupLine {
+	fill: none;
 }
 
 .occupTitle {
