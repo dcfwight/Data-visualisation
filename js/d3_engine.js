@@ -190,10 +190,11 @@ function draw(data) {
 		.attr('class', 'showAll button')
 		.style('cursor', 'pointer')
 		.on('click', function() {
+			removeLines;
 			lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
 			d3.selectAll(".plottedCircle")
 				.style('opacity', 0);
-			d3.selectAll('.occupPath')
+			d3.selectAll('.linePath')
 				.attr('stroke-width', 1.5)
 				.style('opacity', 0.15);
 			d3.selectAll('.buttonRect')
@@ -212,7 +213,25 @@ function draw(data) {
 		.attr('y', 464)
 		.attr('text-anchor', 'start')
 		.text('Show all');
+	
+	// make button to clear all lines
+	var clearButton = svg.append('g')
+	.attr('class', 'showAll button')
+		.style('cursor', 'pointer')
+		.on('click', removeLines);
+		
+	clearButton.append('rect')
+		.attr('x', 250)
+		.attr('y', 450)
+		.attr('width', 90)
+		.attr('height', 20);
 
+	clearButton.append('text')
+		.attr('class', 'clearText')
+		.attr('x', 256)
+		.attr('y', 464)
+		.attr('text-anchor', 'start')
+		.text('Clear all');
 	
 	// make buttons for the occupations
 	// first make a container for the group of buttons
@@ -402,7 +421,7 @@ function draw(data) {
 		var linePath = d3.select('svg')
 			.selectAll('.occupLine')
 			.data(occupation_data, function(d) {
-			return d.key;
+				return d.key;
 		});
 	
 		linePath.enter()
@@ -417,13 +436,15 @@ function draw(data) {
 			.attr('d', function(d) {
 				return line(d.values);
 			})
-			.style('opacity', lineOpacity = 0.5)
+			.style('opacity', lineOpacity)
 			.attr('stroke', lineColor)
 			.attr('stroke-width', lineWidth = 1.5);
 	
-		linePath.exit().remove();
+		//linePath.exit().remove();
 	}
 	// End of function lineDraw(occupation)
+	
+
 	
 	function lineDrawAverage(averagedata) {
 		// now create the linePath for the average - this stays on the screen.
@@ -438,11 +459,10 @@ function draw(data) {
 		});
 		//.curve("linear");       
 	
-		var averageLinePath = d3.select('svg')
+		d3.select('svg')
 			.append('path')
 			.attr('class','averageLinePath')
-			.attr('d', averageLine(averagedata))
-			
+			.attr('d', averageLine(averagedata));
 	}
 	// end of lineDrawAverage function
 	
@@ -462,7 +482,8 @@ function draw(data) {
 		plot_points(occup_points_data, circleColor = 'red', circleOpacity = 1); // pass those points to the plot_points function
 	
 		lineDraw(occup_line_data, lineColor = 'red', lineOpacity = 1, lineWidth = 3); // pass those points to the lineDraw function
-	
+		debugger;
+		
 		lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15, lineWidth = 1.5);
 	}
 	
@@ -484,10 +505,11 @@ function draw(data) {
 	
 				//var circles = plot_points([], circleColor = "blue", circleOpacity = 0.0);
 	
-				lineDraw(linesArray, lineColor = 'red', lineOpacity = 1);
+				lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
 				// next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
 				d3.selectAll('.linePath')
-					.style('opacity', 0.25);
+					.style('opacity', 0.15);
+				
 				d3.selectAll('.plottedCircle')
 					.style('opacity', 0);
 	
@@ -498,3 +520,13 @@ function draw(data) {
 	} // END of function animationLoop
 
 } // END of function draw(data
+
+function removeLines() {
+	// this will remove all the occupLine lines
+	var svg = d3.select('svg');
+	
+	var occupLines = svg.selectAll('.occupLine')
+		.data([])
+		.exit()
+		.remove();
+}
