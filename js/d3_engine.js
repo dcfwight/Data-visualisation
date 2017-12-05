@@ -90,8 +90,6 @@ function draw(data) {
 		.attr("class", "occupTitle")
 		.attr('x', (width - buttonBuffer) / 2)
 		.attr('y', 41)
-		.style('text-anchor', 'middle')
-		.style('font-size', 30)
 		.text("Run animation or click on Occupation");
 	
 	// Create a set of unique occupations called 'occupations' by adding to it.
@@ -125,8 +123,6 @@ function draw(data) {
 		.append('text')
 		.attr("x", (width - buttonBuffer - 50))
 		.attr("y", -6)
-		.style("text-anchor", "end")
-		.style('font-size', 15)
 		.text("Income Bracket");
 
 	// construct the y axis scale. This is linear as it is a range of apr values.
@@ -152,9 +148,6 @@ function draw(data) {
 		.attr('y', 6)
 		.attr('x', -4)
 		.attr('dy', ".71em")
-		.style('text-anchor', 'end')
-		.style('font-size', 15)
-		.style('fill', 'black')
 		.text('Average Borrower APR');
 
 	// create the y grid lines
@@ -169,16 +162,9 @@ function draw(data) {
 		.attr("class", "grid")
 		.call(y_grids);
 
-	// create a scale for the radius of the circles
-	var rScale = d3.scaleSqrt()
-		.domain([0, d3.max(data, function(d) {
-			return d.N;
-		})])
-		.range([1, 30]);
-
 	// make button for the animation
 	var animateButton = svg.append('g')
-		.attr('class', 'animateButton')
+		.attr('class', 'animate button')
 		.style('cursor', 'pointer')
 		.on('click', function() {
 			animationLoop();
@@ -189,24 +175,19 @@ function draw(data) {
 	animateButton.append('rect')
 		.attr('x', 50)
 		.attr('y', 450)
-		.attr('rx', 5)
-		.attr('ry', 5)
-		.attr('width', 90)
 		.attr('height', 20)
-		.attr('fill', '#7777BB');
+		.attr('width', 90);
 
 	animateButton.append('text')
 		.attr('class', 'animateText')
 		.attr('x', 56)
 		.attr('y', 464)
-		.text('Run animation')
-		.attr('fill', 'white')
-		.attr('font-family', 'sans-serif')
-		.attr('font-size', 12);
+		.attr('text-anchor', 'start')
+		.text('Run animation');
 
 	// make button to show all
 	var showAllButton = svg.append('g')
-		.attr('class', 'showAllButton')
+		.attr('class', 'showAll button')
 		.style('cursor', 'pointer')
 		.on('click', function() {
 			lineDraw(linesArray, lineColor = 'red', lineOpacity = 0.15);
@@ -222,37 +203,32 @@ function draw(data) {
 	showAllButton.append('rect')
 		.attr('x', 150)
 		.attr('y', 450)
-		.attr('rx', 5)
-		.attr('ry', 5)
 		.attr('width', 90)
-		.attr('height', 20)
-		.attr('fill', '#7777BB');
-	
+		.attr('height', 20);
+
 	showAllButton.append('text')
 		.attr('class', 'showAllText')
 		.attr('x', 156)
 		.attr('y', 464)
-		.text('Show all')
-		.attr('fill', 'white')
-		.attr('font-family', 'sans-serif')
-		.attr('font-size', 12);
+		.attr('text-anchor', 'start')
+		.text('Show all');
+
 	
 	// make buttons for the occupations
-	
 	// first make a container for the group of buttons
 	var allButtons = svg.append("g")
 		.attr("id", "allButtons");
 
 	// creat a group for each button (rect and text)
-	var buttonGroups = allButtons.selectAll("g.button")
+	var buttonGroups = allButtons.selectAll("g.occupButton")
 		.data(uniqueOccupations)
 		.enter()
 		.append("g")
-		.attr("class", "button")
+		.attr("class", "occupButton")
 		.style("cursor", "pointer")
 		.on("click", function(d) {
-		updateButtonColors(d3.select(this), d3.select(this.parentNode));
-		update(d);
+			updateButtonColors(d3.select(this), d3.select(this.parentNode));
+			update(d);
 		})
 		.on("mouseover", function() {
 			if (d3.select(this).select("rect").attr("fill") != pressedColor) {
@@ -284,7 +260,6 @@ function draw(data) {
 	//adding text to each button group, centered within the button rect
 	buttonGroups.append("text")
 		.attr("class", "buttonText")
-		.attr('font-family', 'sans-serif')
 		.attr('fill', 'white')
 		.attr('font-size', 10)
 		.attr("x", function(d, i) {
@@ -301,7 +276,6 @@ function draw(data) {
 	function updateButtonColors(button, parent) {
 		parent.selectAll("rect")
 			.attr("fill", defaultColor);
-	
 		button.select("rect")
 			.attr("fill", pressedColor);
 	}
@@ -320,11 +294,6 @@ function draw(data) {
 			return yScale(d.value.meanApr) + margin.top;
 		})
 		.attr('r', 5)
-		/*From discussing with Udacity reviewer - taken out sample sizes.
-		.attr('r', function(d){
-			return rScale(d.values.N);
-		})*/
-		//.style('fill', "green")
 		.style('opacity', 0.5)
 		.on("mouseover", function(d) {
 			tooltip.transition()
@@ -343,57 +312,13 @@ function draw(data) {
 				.duration(500)
 				.style("opacity", 0);
 		});
-
-	/* Note - have removed this from the SVG - viewer not interested in sample sizes
-	function showCircleScale() {
-		// want to show 4 circles, with sample sizes for when they are selected
-		var sizes = [1000, 2000, 4000, 8000];
-	
-		myChart.append('text')
-			.attr('x', 300 - rScale(sizes[0]))
-			.attr('y', yScale(0.11))
-			.text('Sample sizes');
-	
-		var scaleCircles = myChart.selectAll('scaleCircleG')
-			.data(sizes)
-			.enter()
-			.append('g')
-			.attr('class', 'scaleCircle');
-	
-		scaleCircles.append('circle')
-			.attr('class', 'scaleCircleCircle')
-			.attr('cx', function(d, i) {
-			return (i * 80) + 300;
-		})
-			.attr('cy', yScale(0.075))
-			.attr('r', function(d) {
-			return rScale(d);
-		})
-			.attr('fill', 'red');
-	
-		scaleCircles.append('text')
-			.attr('class', 'scaleCircleText')
-			.attr('x', function(d, i) {
-			return (i * 80) + 300;
-		})
-			.attr('y', yScale(0.03))
-			.text(function(d) {
-			return d3.format("0,000")(d);
-		})
-			.attr('text-anchor', 'middle');
-	}*/
-/*
-		//Taken out the showCircleScale, after discussion with Udacity reviewer - viewer probably
-		// not interested in sample sizes.
-		showCircleScale();
-		*/
-
+		
 	// add the tooltip area to the div element with id 'container'
 	var tooltip = d3.select('#container')
 		.append("div")
 		.attr("class", "tooltip")
-		.style("width", "180px")
-		.style('height', "60px")
+		//.style("width", "180px")
+		//.style('height', "60px")
 		.style("opacity", 0);
 
 	//add a selected circle variable 
@@ -425,56 +350,42 @@ function draw(data) {
 			return yScale(d.apr) + margin.top;
 		})
 			.attr('r', 8)
-		/* I removed this, on discussion with Udacity reviewer
-						 * Viewer is prob not interested in sample sizes.
-						.attr('r', function(d){
-							return rScale(d.N);
-							})
-						*/
-		.style('fill', circleColor)
+		
+			.style('fill', circleColor)
 			.style('opacity', circleOpacity)
 			.on("mouseover", function(d) {
-			tooltip.transition()
-				.duration(200)
-				.style("opacity", 0.9);
-			tooltip.html(d.OccGroup + "<br>" +
-				"Income Group: " + d.income + "<br>" +
-				"Mean APR: " + d3.format(".1%")(d.apr) + "<br>" +
-				"Sample size: " + d3.format("0,000")(d.N))
-				.style('font-size', "10pt")
-				.style("left", (d3.event.pageX + 5) + "px")
-				.style("top", (d3.event.pageY - 28) + "px")
-				.style("background-color", "white");
+				tooltip.transition()
+					.duration(200)
+					.style("opacity", 0.9);
+				tooltip.html(d.OccGroup + "<br>" +
+					"Income Group: " + d.income + "<br>" +
+					"Mean APR: " + d3.format(".1%")(d.apr) + "<br>" +
+					"Sample size: " + d3.format(",")(d.N))
+					.style('font-size', "10pt")
+					.style("left", (d3.event.pageX + 5) + "px")
+					.style("top", (d3.event.pageY - 28) + "px")
+					.style("background-color", "white");
 	
-			selectedCircle.transition()
-				.duration(50)
-				.style('opacity', 1.0)
-				.attr('cx', xScale(d.income) + margin.left)
-				.attr('cy', yScale(d.apr) + margin.top)
-				.attr('r', 10)
-			//.attr('r', rScale(d.N))
-			/*.style('fill',function(d){
-									return colorScale(parent.OccGroup);
-									})
-									*/
-			;
-		})
+				selectedCircle.transition()
+					.duration(50)
+					.style('opacity', 1.0)
+					.attr('cx', xScale(d.income) + margin.left)
+					.attr('cy', yScale(d.apr) + margin.top)
+					.attr('r', 10);
+			})
 			.on("mouseout", function(d) {
-			tooltip.transition()
-				.duration(500)
-				.style("opacity", 0);
-	
-			selectedCircle.transition()
-				.duration(500)
-				.style('opacity', 0);
-	
-		});
-	
-	
-	} // END of function plot points(data)    
+				tooltip.transition()
+					.duration(500)
+					.style("opacity", 0);
+
+				selectedCircle.transition()
+					.duration(500)
+					.style('opacity', 0);
+			});
+	}
+	// END of function plot points(data)    
 
 	// Create function to draw a line for an occupation group
-	
 	function lineDraw(occupation_data, lineColor, lineOpacity) {
 	
 		// Create variable to define pixel points of the line
@@ -502,17 +413,17 @@ function draw(data) {
 	
 		linePath.append('path')
 		//.attr('class','line occupPath')
-		.attr('class', 'line')
+		.attr('class', 'linePath')
 			.attr('d', function(d) {
-			return line(d.values);
-		})
-			.style('opacity', 0.5)
+				return line(d.values);
+			})
+			.style('opacity', lineOpacity = 0.5)
 			.attr('stroke', lineColor)
-			.attr('fill', 'none')
-			.attr('stroke-width', lineWidth = 2);
+			.attr('stroke-width', lineWidth = 1.5);
 	
 		linePath.exit().remove();
-	} // End of function lineDraw(occupation)
+	}
+	// End of function lineDraw(occupation)
 	
 	function lineDrawAverage(averagedata) {
 		// now create the linePath for the average - this stays on the screen.
@@ -532,10 +443,10 @@ function draw(data) {
 			.attr('class','averageLinePath')
 			.attr('d', averageLine(averagedata))
 			
-	} // end of lineDrawAverage function
+	}
+	// end of lineDrawAverage function
 	
 	// define update function, to plot the data for a specific occupation
-	
 	function update(occupation) {
 		d3.select(".occupTitle")
 			.text(occupation);
@@ -573,15 +484,17 @@ function draw(data) {
 	
 				//var circles = plot_points([], circleColor = "blue", circleOpacity = 0.0);
 	
-				var lines = lineDraw(linesArray, lineColor = 'red', lineOpacity = 1);
+				lineDraw(linesArray, lineColor = 'red', lineOpacity = 1);
 				// next bit of code re-styles the last line that was written (i.e. it wasn't part of the 'enter')
-				d3.selectAll('.occupPath')
-					.style('opacity', 0.15);
+				d3.selectAll('.linePath')
+					.style('opacity', 0.25);
+				d3.selectAll('.plottedCircle')
+					.style('opacity', 0);
 	
 				d3.select('.occupTitle')
 					.text('Run animation or click on Occupation');
 			}
-		}, 50);
+		}, 75);
 	} // END of function animationLoop
 
 } // END of function draw(data
