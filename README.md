@@ -6,7 +6,8 @@
 ## Viewing on [bl.ocks.org](https://bl.ocks.org/-/about)
 bl.ocks.org is a simple viewer set up by Mike Bostock to view code examples hosted on GitHub Gist
 The visualizations have all been uploaded, along with their iterations.
-The link to all data visualizations is [here](https://gist.github.com/dcfwight)
+* The link to all data visualizations is [here](https://bl.ocks.org/dcfwight)
+* The link to the gists is [here](https://gist.github.com/dcfwight) 
 
 ## Installation on local machine to view on local server
 1. Clone the entire directory to your local machine. `git clone https://github.com/dcfwight/Data-visualisation.git`
