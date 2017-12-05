@@ -30,5 +30,9 @@ The visualizations have all been uploaded, along with their iterations.
 1. Reduced the weight of the horizontal grid lines to a more muted, less distracting shade of grey.
 1. NOTE - the previous iterations of the project are linked in the gist. The link to the bl.ocks is [here](http://bl.ocks.org/dcfwight/e8a7e35d8b5c485b844d)
 
+## Feedback
+Feedback was sought from other Udacity students, and this affected the iterations of the visualization.
+To see their comments, open the file feedback.txt
+
 ##Resources
 - Udacity Nano course, Mike Bostock, Scott Murray, Nikhil Nathwani blog on building buttons: [here](http://www.nikhil-nathwani.com/blog/posts/radio/radio.html)
