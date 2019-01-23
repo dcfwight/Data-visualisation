@@ -34,5 +34,5 @@ The visualizations have all been uploaded, along with their iterations.
 Feedback was sought from other Udacity students, and this affected the iterations of the visualization.
 To see their comments, open the file feedback.txt
 
-##Resources
-- Udacity Nano course, Mike Bostock, Scott Murray, Nikhil Nathwani blog on building buttons: [here](http://www.nikhil-nathwani.com/blog/posts/radio/radio.html)
+## Resources
+- Udacity Nanodegree course, Mike Bostock, Scott Murray, Nikhil Nathwani blog on building buttons: [here](http://www.nikhil-nathwani.com/blog/posts/radio/radio.html)
